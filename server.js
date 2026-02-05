@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // Cloudflare R2 configuration
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
+const R2_ENDPOINT = process.env.R2_ENDPOINT;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || 'podcasts';
@@ -42,15 +42,15 @@ const URL_EXPIRATION_SECONDS = parseInt(process.env.URL_EXPIRATION_SECONDS) || 6
 let s3Client = null;
 
 function initializeR2Client() {
-    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
+    if (!R2_ENDPOINT || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
         console.warn('⚠️  R2 credentials not configured. Set environment variables:');
-        console.warn('   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY');
+        console.warn('   R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY');
         return null;
     }
 
     return new S3Client({
         region: 'auto',
-        endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        endpoint: R2_ENDPOINT,
         credentials: {
             accessKeyId: R2_ACCESS_KEY_ID,
             secretAccessKey: R2_SECRET_ACCESS_KEY
