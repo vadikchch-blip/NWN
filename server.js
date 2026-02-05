@@ -69,8 +69,8 @@ function isValidFilename(filename) {
         return false;
     }
     
-    // Prevent path traversal
-    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    // Prevent path traversal (but allow forward slashes for subfolders)
+    if (filename.includes('..') || filename.includes('\\')) {
         return false;
     }
     
