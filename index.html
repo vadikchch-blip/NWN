@@ -616,8 +616,9 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                             <\/div>
 
                             ${data.podcast ? `
-                            <div class="podcast-player p-4 bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-xl">
-                                <div class="flex items-center gap-4">
+                            <div class="podcast-player p-4 bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-xl overflow-hidden relative">
+                                <canvas class="podcast-visualizer absolute inset-0 w-full h-full opacity-30"><\/canvas>
+                                <div class="flex items-center gap-4 relative z-10">
                                     <button 
                                         onclick="togglePodcast('${data.podcast}', this)" 
                                         class="podcast-play-btn w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-[#f0f0f0] transition-all shadow-lg hover:scale-105"
@@ -735,6 +736,93 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
         let currentAudio = null;
         let currentPlayBtn = null;
         const audioCache = new Map(); // Cache signed URLs
+        
+        // Audio Visualizer
+        let audioContext = null;
+        let analyser = null;
+        let visualizerAnimation = null;
+        let currentCanvas = null;
+        
+        function initVisualizer(audio, canvas) {
+            if (!canvas) return;
+            
+            // Create audio context on first use
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Resume if suspended
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // Create analyser if not exists
+            if (!analyser) {
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                
+                // Connect audio to analyser
+                const source = audioContext.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+            }
+            
+            currentCanvas = canvas;
+            drawVisualizer();
+        }
+        
+        function drawVisualizer() {
+            if (!currentCanvas || !analyser) return;
+            
+            const canvas = currentCanvas;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width = canvas.offsetWidth * 2;
+            const height = canvas.height = canvas.offsetHeight * 2;
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function draw() {
+                visualizerAnimation = requestAnimationFrame(draw);
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Draw waves
+                const barWidth = width / bufferLength * 2.5;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = (dataArray[i] / 255) * height * 0.8;
+                    
+                    // Gradient from white to gray
+                    const intensity = dataArray[i] / 255;
+                    const gray = Math.floor(255 - intensity * 100);
+                    ctx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
+                    
+                    // Draw mirrored bars (wave effect)
+                    const y = (height - barHeight) / 2;
+                    ctx.fillRect(x, y, barWidth - 1, barHeight);
+                    
+                    x += barWidth;
+                }
+            }
+            
+            draw();
+        }
+        
+        function stopVisualizer() {
+            if (visualizerAnimation) {
+                cancelAnimationFrame(visualizerAnimation);
+                visualizerAnimation = null;
+            }
+            if (currentCanvas) {
+                const ctx = currentCanvas.getContext('2d');
+                ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
+            }
+        }
 
         async function getSignedAudioUrl(filename) {
             // Check cache first
@@ -783,6 +871,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 btn.dataset.playing = 'false';
                 playIcon.classList.remove('hidden');
                 pauseIcon.classList.add('hidden');
+                stopVisualizer();
             } else {
                 // Play
                 try {
@@ -836,6 +925,10 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                     
                     await currentAudio.play();
                     
+                    // Start visualizer
+                    const canvas = playerContainer.querySelector('.podcast-visualizer');
+                    initVisualizer(currentAudio, canvas);
+                    
                     loadingEl.classList.add('hidden');
                     pauseIcon.classList.remove('hidden');
                     btn.dataset.playing = 'true';
@@ -861,6 +954,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 playIcon.classList.remove('hidden');
                 pauseIcon.classList.add('hidden');
             }
+            stopVisualizer();
         }
 
         function seekPodcast(event, progressBar) {
