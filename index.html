@@ -616,19 +616,19 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                                 <p class="body-text text-lg">${data.content.desc}<\/p>
                             <\/div>
 
-                            ${data.podcast ? \`
+                            ${data.podcast ? `
                             <div class="podcast-player p-4 bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-xl">
                                 <div class="flex items-center gap-4">
                                     <button 
-                                        onclick="togglePodcast('\${data.podcast}', this)" 
+                                        onclick="togglePodcast('${data.podcast}', this)" 
                                         class="podcast-play-btn w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-[#f0f0f0] transition-all shadow-lg hover:scale-105"
-                                        data-podcast="\${data.podcast}"
+                                        data-podcast="${data.podcast}"
                                         data-playing="false">
                                         <span class="material-symbols-outlined text-black text-2xl play-icon">play_arrow<\/span>
                                         <span class="material-symbols-outlined text-black text-2xl pause-icon hidden">pause<\/span>
                                     <\/button>
                                     <div class="flex-1">
-                                        <div class="text-white text-sm font-medium mb-1">Подкаст: \${data.name}<\/div>
+                                        <div class="text-white text-sm font-medium mb-1">Подкаст: ${data.name}<\/div>
                                         <div class="flex items-center gap-3">
                                             <span class="podcast-time text-[#8B8E93] text-xs">0:00<\/span>
                                             <div class="flex-1 h-1 bg-[#404040] rounded-full overflow-hidden cursor-pointer" onclick="seekPodcast(event, this)">
@@ -642,7 +642,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                                     <\/div>
                                 <\/div>
                             <\/div>
-                            \` : ''}
+                            ` : ''}
 
                             ${data.content.strategy ? `
                             <div class="p-6 bg-[#FAFAFA] border border-[#E6E6E6] rounded-xl relative overflow-hidden group">
@@ -732,10 +732,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            renderNav();
-        // Audio Player for Podcasts
+        // Audio Player for Podcasts (global scope for onclick handlers)
         let currentAudio = null;
         let currentPlayBtn = null;
         const audioCache = new Map(); // Cache signed URLs
@@ -748,7 +745,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             }
 
             try {
-                const response = await fetch(\`/audio-url?filename=\${encodeURIComponent(filename)}\`);
+                const response = await fetch(`/audio-url?filename=${encodeURIComponent(filename)}`);
                 if (!response.ok) {
                     throw new Error('Failed to get audio URL');
                 }
@@ -818,7 +815,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                             const progressEl = playerContainer.querySelector('.podcast-progress');
                             timeEl.textContent = formatTime(currentAudio.currentTime);
                             const percent = (currentAudio.currentTime / currentAudio.duration) * 100;
-                            progressEl.style.width = \`\${percent}%\`;
+                            progressEl.style.width = `${percent}%`;
                         });
                         
                         currentAudio.addEventListener('ended', () => {
@@ -878,7 +875,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             if (isNaN(seconds)) return '--:--';
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
-            return \`\${mins}:\${secs.toString().padStart(2, '0')}\`;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
         // Stop podcast when navigating to different archetype
