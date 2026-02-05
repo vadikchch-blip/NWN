@@ -781,67 +781,65 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
-            let time = 0;
+            const waveData = new Uint8Array(analyser.fftSize);
+            
+            // Smoothed values for organic movement
+            let smoothedIntensity = 0;
+            const points = [];
+            const numPoints = 80;
+            for (let i = 0; i < numPoints; i++) {
+                points.push({ y: 0, targetY: 0 });
+            }
             
             function draw() {
                 visualizerAnimation = requestAnimationFrame(draw);
-                time += 0.015;
                 
+                // Get waveform data
+                analyser.getByteTimeDomainData(waveData);
                 analyser.getByteFrequencyData(dataArray);
                 
-                // Calculate average frequency for reactivity
+                // Calculate intensity
                 const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-                const intensity = avg / 255;
+                smoothedIntensity += (avg / 255 - smoothedIntensity) * 0.1;
                 
-                // Clear with fade effect
-                ctx.fillStyle = 'rgba(26, 26, 26, 0.15)';
+                // Clear canvas
+                ctx.fillStyle = '#1a1a1a';
                 ctx.fillRect(0, 0, width, height);
                 
-                // Draw multiple wave layers
-                const layers = [
-                    { amplitude: 0.3, frequency: 0.02, speed: 1, alpha: 0.4 },
-                    { amplitude: 0.2, frequency: 0.03, speed: 1.5, alpha: 0.3 },
-                    { amplitude: 0.15, frequency: 0.015, speed: 0.8, alpha: 0.2 }
-                ];
-                
-                layers.forEach((layer, layerIndex) => {
-                    ctx.beginPath();
-                    ctx.moveTo(0, height / 2);
-                    
-                    for (let x = 0; x <= width; x += 3) {
-                        // Sample audio data
-                        const dataIndex = Math.floor((x / width) * bufferLength);
-                        const audioValue = dataArray[dataIndex] / 255;
-                        
-                        // Combine sine waves with audio reactivity
-                        const baseWave = Math.sin(x * layer.frequency + time * layer.speed);
-                        const audioWave = Math.sin(x * 0.01 + time * 2) * audioValue;
-                        
-                        const waveHeight = (baseWave * layer.amplitude + audioWave * 0.15) * height * (0.3 + intensity * 0.4);
-                        const y = height / 2 + waveHeight;
-                        
-                        ctx.lineTo(x, y);
-                    }
-                    
-                    // Style based on layer
-                    const gray = 180 + layerIndex * 25;
-                    ctx.strokeStyle = `rgba(${gray}, ${gray}, ${gray}, ${layer.alpha + intensity * 0.3})`;
-                    ctx.lineWidth = 1.5 - layerIndex * 0.3;
-                    ctx.stroke();
-                });
-                
-                // Add subtle glow dots at peaks
-                if (intensity > 0.3) {
-                    for (let i = 0; i < 3; i++) {
-                        const x = (Math.sin(time * (1 + i * 0.5)) * 0.5 + 0.5) * width;
-                        const y = height / 2 + Math.cos(time * 2 + i) * height * 0.2 * intensity;
-                        
-                        ctx.beginPath();
-                        ctx.arc(x, y, 2 + intensity * 3, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + intensity * 0.4})`;
-                        ctx.fill();
-                    }
+                // Update points based on waveform
+                for (let i = 0; i < numPoints; i++) {
+                    const waveIndex = Math.floor((i / numPoints) * waveData.length);
+                    const waveValue = (waveData[waveIndex] - 128) / 128;
+                    points[i].targetY = waveValue * height * 0.35 * (0.5 + smoothedIntensity);
+                    points[i].y += (points[i].targetY - points[i].y) * 0.15;
                 }
+                
+                // Draw smooth curve
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2 + points[0].y);
+                
+                for (let i = 0; i < numPoints - 1; i++) {
+                    const x = (i / (numPoints - 1)) * width;
+                    const nextX = ((i + 1) / (numPoints - 1)) * width;
+                    const y = height / 2 + points[i].y;
+                    const nextY = height / 2 + points[i + 1].y;
+                    
+                    // Smooth bezier curve
+                    const cpX = (x + nextX) / 2;
+                    ctx.quadraticCurveTo(x, y, cpX, (y + nextY) / 2);
+                }
+                
+                // Line style
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.6 + smoothedIntensity * 0.4})`;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+                
+                // Subtle glow
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 + smoothedIntensity * 0.15})`;
+                ctx.lineWidth = 6;
+                ctx.stroke();
             }
             
             draw();
