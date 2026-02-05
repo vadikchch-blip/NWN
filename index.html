@@ -781,32 +781,66 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
+            let time = 0;
             
             function draw() {
                 visualizerAnimation = requestAnimationFrame(draw);
+                time += 0.015;
                 
                 analyser.getByteFrequencyData(dataArray);
                 
-                ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+                // Calculate average frequency for reactivity
+                const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+                const intensity = avg / 255;
+                
+                // Clear with fade effect
+                ctx.fillStyle = 'rgba(26, 26, 26, 0.15)';
                 ctx.fillRect(0, 0, width, height);
                 
-                // Draw waves
-                const barWidth = width / bufferLength * 2.5;
-                let x = 0;
+                // Draw multiple wave layers
+                const layers = [
+                    { amplitude: 0.3, frequency: 0.02, speed: 1, alpha: 0.4 },
+                    { amplitude: 0.2, frequency: 0.03, speed: 1.5, alpha: 0.3 },
+                    { amplitude: 0.15, frequency: 0.015, speed: 0.8, alpha: 0.2 }
+                ];
                 
-                for (let i = 0; i < bufferLength; i++) {
-                    const barHeight = (dataArray[i] / 255) * height * 0.8;
+                layers.forEach((layer, layerIndex) => {
+                    ctx.beginPath();
+                    ctx.moveTo(0, height / 2);
                     
-                    // Gradient from white to gray
-                    const intensity = dataArray[i] / 255;
-                    const gray = Math.floor(255 - intensity * 100);
-                    ctx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
+                    for (let x = 0; x <= width; x += 3) {
+                        // Sample audio data
+                        const dataIndex = Math.floor((x / width) * bufferLength);
+                        const audioValue = dataArray[dataIndex] / 255;
+                        
+                        // Combine sine waves with audio reactivity
+                        const baseWave = Math.sin(x * layer.frequency + time * layer.speed);
+                        const audioWave = Math.sin(x * 0.01 + time * 2) * audioValue;
+                        
+                        const waveHeight = (baseWave * layer.amplitude + audioWave * 0.15) * height * (0.3 + intensity * 0.4);
+                        const y = height / 2 + waveHeight;
+                        
+                        ctx.lineTo(x, y);
+                    }
                     
-                    // Draw mirrored bars (wave effect)
-                    const y = (height - barHeight) / 2;
-                    ctx.fillRect(x, y, barWidth - 1, barHeight);
-                    
-                    x += barWidth;
+                    // Style based on layer
+                    const gray = 180 + layerIndex * 25;
+                    ctx.strokeStyle = `rgba(${gray}, ${gray}, ${gray}, ${layer.alpha + intensity * 0.3})`;
+                    ctx.lineWidth = 1.5 - layerIndex * 0.3;
+                    ctx.stroke();
+                });
+                
+                // Add subtle glow dots at peaks
+                if (intensity > 0.3) {
+                    for (let i = 0; i < 3; i++) {
+                        const x = (Math.sin(time * (1 + i * 0.5)) * 0.5 + 0.5) * width;
+                        const y = height / 2 + Math.cos(time * 2 + i) * height * 0.2 * intensity;
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, 2 + intensity * 3, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + intensity * 0.4})`;
+                        ctx.fill();
+                    }
                 }
             }
             
