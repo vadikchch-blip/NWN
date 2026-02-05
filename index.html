@@ -389,6 +389,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 group: "Идеалистические",
                 icon: "palette",
                 podcast: "podcasts/Творец.mp3",
+                animations: ["animations/Творец.MP4"],
                 brands: ["AAPE", "ASICS", "KANGOL", "LI-NING", "OBEY", "RIPNDIP", "VOLCHOK", "YMKASHIX"],
                 content: {
                     desc: "Свет на вход, конфетти, сальто! В магазин зашел Творец. Задумка, перформанс, видение. Он не переносит обыденность. Одевается экспрессивно, предпочитает инновационность и концепт удобству.",
@@ -403,6 +404,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 group: "Идеалистические",
                 icon: "diamond",
                 podcast: "podcasts/Правитель.mp3",
+                animations: ["animations/Правитель.MP4", "animations/Правитель 2.MP4"],
                 brands: ["CARHARTT", "LACOSTE", "FRED PERRY", "NEW BALANCE", "NIKE", "ZNY", "SHU", "CASIO"],
                 content: {
                     desc: "Роскошь, дорогие бренды, часы, статус. «Нос в кокосе». Если для Любовника важна красота, то для Правителя — цена и статус. Он хочет подчеркнуть свое величие.",
@@ -431,6 +433,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 group: "Идеалистические",
                 icon: "psychology",
                 podcast: "podcasts/Мудрец.m4a",
+                animations: ["animations/Мудрец.MP4"],
                 brands: ["CARHARTT", "CASIO", "DICKIES", "LACOSTE", "NEW BALANCE", "ANTEATER"],
                 content: {
                     desc: "Консервативный, сбалансированный лук. Классика. Живет в мире формул и строгих законов. Ценит разумность выбора.",
@@ -459,6 +462,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 group: "Социальные",
                 icon: "groups",
                 podcast: "podcasts/Славный малый.mp3",
+                animations: ["animations/Славный_малый.MP4"],
                 brands: ["ADIDAS", "NIKE", "CONVERSE", "VANS", "CARHARTT", "STUSSY", "DICKIES"],
                 content: {
                     desc: "Хочет быть «своим». Конформист. Самоидентификация как часть группы дает ему безопасность. Любит хиты продаж.",
@@ -671,13 +675,35 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
 
                         <!-- Right Column: Visuals -->
                         <div class="lg:col-span-5 space-y-6">
-                            <!-- Hero Image (Mood) -->
+                            <!-- Hero Animation or Image -->
+                            ${data.animations ? `
+                            <div class="w-full aspect-[3/4] bg-[#1a1a1a] overflow-hidden rounded relative">
+                                <div class="animation-container w-full h-full overflow-y-auto snap-y snap-mandatory" style="scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none;">
+                                    ${data.animations.map((anim, i) => `
+                                    <div class="w-full h-full flex-shrink-0 snap-start relative" style="min-height: 100%;">
+                                        <video 
+                                            class="archetype-video w-full h-full object-cover"
+                                            autoplay 
+                                            loop 
+                                            muted 
+                                            playsinline
+                                            data-src="${anim}">
+                                        <\/video>
+                                        ${data.animations.length > 1 ? `<div class="absolute bottom-4 right-4 bg-black/50 px-2 py-1 text-[10px] text-white uppercase tracking-widest backdrop-blur-sm rounded">${i + 1}/${data.animations.length}<\/div>` : ''}
+                                    <\/div>
+                                    `).join('')}
+                                <\/div>
+                                <div class="absolute bottom-4 left-4 bg-white/90 px-3 py-1 text-[10px] uppercase tracking-widest backdrop-blur-sm">Animation<\/div>
+                                ${data.animations.length > 1 ? `<div class="absolute top-4 right-4 bg-black/50 px-2 py-1 text-[10px] text-white backdrop-blur-sm rounded flex items-center gap-1"><span class="material-symbols-outlined text-sm">swipe_up<\/span>Scroll<\/div>` : ''}
+                            <\/div>
+                            ` : `
                             <div class="w-full aspect-[3/4] bg-[#F5F5F5] overflow-hidden rounded relative group">
                                 <img src="/image?query=${encodeURIComponent(data.content.moodQuery || data.content.imageQuery)}&aspect=3:4" 
                                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter saturate-0 group-hover:saturate-100" 
                                      alt="${data.name} Style">
                                 <div class="absolute bottom-4 left-4 bg-white/90 px-3 py-1 text-[10px] uppercase tracking-widest backdrop-blur-sm">Mood<\/div>
                             <\/div>
+                            `}
 
                             <!-- Product Gallery Snippet (Simulated) -->
                             ${data.id !== 'intro' ? `
@@ -1008,7 +1034,29 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
         loadArchetype = function(index) {
             stopCurrentPodcast();
             originalLoadArchetype(index);
+            // Load videos after content is rendered
+            setTimeout(loadArchetypeVideos, 100);
         };
+
+        // Load videos with signed URLs
+        async function loadArchetypeVideos() {
+            const videos = document.querySelectorAll('.archetype-video[data-src]');
+            for (const video of videos) {
+                const filename = video.dataset.src;
+                if (!filename || video.src) continue;
+                
+                try {
+                    const response = await fetch(`/audio-url?filename=${encodeURIComponent(filename)}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        video.src = data.url;
+                        video.load();
+                    }
+                } catch (e) {
+                    console.error('Failed to load video:', filename, e);
+                }
+            }
+        }
 
         loadArchetype(0);
 
