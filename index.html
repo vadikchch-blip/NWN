@@ -405,6 +405,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 icon: "diamond",
                 podcast: "podcasts/Правитель.mp3",
                 animations: ["animations/Правитель.MP4", "animations/Правитель 2.MP4"],
+                images: ["правитель_да", "правитель_нет"],
                 brands: ["CARHARTT", "LACOSTE", "FRED PERRY", "NEW BALANCE", "NIKE", "ZNY", "SHU", "CASIO"],
                 content: {
                     desc: "Роскошь, дорогие бренды, часы, статус. «Нос в кокосе». Если для Любовника важна красота, то для Правителя — цена и статус. Он хочет подчеркнуть свое величие.",
@@ -693,8 +694,6 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                                     <\/div>
                                     `).join('')}
                                 <\/div>
-                                <div class="absolute bottom-4 left-4 bg-white/90 px-3 py-1 text-[10px] uppercase tracking-widest backdrop-blur-sm">Animation<\/div>
-                                ${data.animations.length > 1 ? `<div class="absolute top-4 right-4 bg-black/50 px-2 py-1 text-[10px] text-white backdrop-blur-sm rounded flex items-center gap-1"><span class="material-symbols-outlined text-sm">swipe_up<\/span>Scroll<\/div>` : ''}
                             <\/div>
                             ` : `
                             <div class="w-full aspect-[3/4] bg-[#F5F5F5] overflow-hidden rounded relative group">
@@ -705,15 +704,24 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                             <\/div>
                             `}
 
-                            <!-- Product Gallery Snippet (Simulated) -->
+                            <!-- Product Gallery -->
                             ${data.id !== 'intro' ? `
                             <div class="grid grid-cols-2 gap-2">
+                                ${data.images ? `
+                                <div class="aspect-square bg-[#FAFAFA] rounded overflow-hidden relative">
+                                     <img class="archetype-image w-full h-full object-cover" data-src="images/${data.images[0]}" alt="Да">
+                                <\/div>
+                                <div class="aspect-square bg-[#FAFAFA] rounded overflow-hidden relative">
+                                     <img class="archetype-image w-full h-full object-cover" data-src="images/${data.images[1]}" alt="Нет">
+                                <\/div>
+                                ` : `
                                 <div class="aspect-square bg-[#FAFAFA] rounded overflow-hidden relative">
                                      <img src="/image?query=${encodeURIComponent(data.brands[0] + ' ' + (data.id === 'hero' || data.id === 'ruler' ? 'shoes' : 'clothing') + ' product white background')}&aspect=1:1" class="w-full h-full object-cover mix-blend-multiply opacity-80 hover:opacity-100 transition-opacity">
                                 <\/div>
                                 <div class="aspect-square bg-[#FAFAFA] rounded overflow-hidden relative">
                                      <img src="/image?query=${encodeURIComponent(data.brands[1] ? data.brands[1] + ' accessory product' : 'stylish accessory')}&aspect=1:1" class="w-full h-full object-cover mix-blend-multiply opacity-80 hover:opacity-100 transition-opacity">
                                 <\/div>
+                                `}
                             <\/div>
                             ` : ''}
                         <\/div>
@@ -1038,8 +1046,9 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             setTimeout(loadArchetypeVideos, 100);
         };
 
-        // Load videos with signed URLs
+        // Load videos and images with signed URLs
         async function loadArchetypeVideos() {
+            // Load videos
             const videos = document.querySelectorAll('.archetype-video[data-src]');
             for (const video of videos) {
                 const filename = video.dataset.src;
@@ -1054,6 +1063,23 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                     }
                 } catch (e) {
                     console.error('Failed to load video:', filename, e);
+                }
+            }
+            
+            // Load images
+            const images = document.querySelectorAll('.archetype-image[data-src]');
+            for (const img of images) {
+                const filename = img.dataset.src;
+                if (!filename || img.src) continue;
+                
+                try {
+                    const response = await fetch(`/audio-url?filename=${encodeURIComponent(filename)}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        img.src = data.url;
+                    }
+                } catch (e) {
+                    console.error('Failed to load image:', filename, e);
                 }
             }
         }

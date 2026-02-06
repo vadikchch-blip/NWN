@@ -61,7 +61,7 @@ function initializeR2Client() {
 s3Client = initializeR2Client();
 
 // Allowed media file extensions for security
-const ALLOWED_EXTENSIONS = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.webm', '.mp4', '.MP4', '.webm', '.mov'];
+const ALLOWED_EXTENSIONS = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.webm', '.mp4', '.MP4', '.mov', '.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
 // Validate filename to prevent path traversal attacks
 function isValidFilename(filename) {
@@ -259,7 +259,12 @@ function getContentType(filename) {
         '.aac': 'audio/aac',
         '.webm': 'audio/webm',
         '.mp4': 'video/mp4',
-        '.mov': 'video/quicktime'
+        '.mov': 'video/quicktime',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.webp': 'image/webp',
+        '.gif': 'image/gif'
     };
     return contentTypes[ext] || 'application/octet-stream';
 }
