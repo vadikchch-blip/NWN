@@ -711,11 +711,11 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                             ${data.id !== 'intro' ? `
                             <div class="grid grid-cols-2 gap-2">
                                 ${data.images ? `
-                                <div class="bg-[#FAFAFA] rounded overflow-hidden relative" style="aspect-ratio: 1/1.2;">
-                                     <img class="archetype-image w-full h-full object-contain" data-src="${data.images[0]}" alt="">
+                                <div class="bg-transparent rounded-xl overflow-hidden relative" style="aspect-ratio: 1/1;">
+                                     <img class="archetype-image w-full h-full object-cover rounded-xl" data-src="${data.images[0]}" alt="">
                                 <\/div>
-                                <div class="bg-[#FAFAFA] rounded overflow-hidden relative" style="aspect-ratio: 1/1.2;">
-                                     <img class="archetype-image w-full h-full object-contain" data-src="${data.images[1]}" alt="">
+                                <div class="bg-transparent rounded-xl overflow-hidden relative" style="aspect-ratio: 1/1;">
+                                     <img class="archetype-image w-full h-full object-cover rounded-xl" data-src="${data.images[1]}" alt="">
                                 <\/div>
                                 ` : `
                                 <div class="aspect-square bg-[#FAFAFA] rounded overflow-hidden relative">
