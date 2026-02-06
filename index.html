@@ -1042,8 +1042,8 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
         loadArchetype = function(index) {
             stopCurrentPodcast();
             originalLoadArchetype(index);
-            // Load videos after content is rendered
-            setTimeout(loadArchetypeVideos, 100);
+            // Load videos and images after content is rendered
+            setTimeout(loadArchetypeVideos, 200);
         };
 
         // Load videos and images with signed URLs
@@ -1070,13 +1070,14 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             const images = document.querySelectorAll('.archetype-image[data-src]');
             for (const img of images) {
                 const filename = img.dataset.src;
-                if (!filename || img.src) continue;
+                if (!filename) continue;
                 
                 try {
                     const response = await fetch(`/audio-url?filename=${encodeURIComponent(filename)}`);
                     if (response.ok) {
                         const data = await response.json();
                         img.src = data.url;
+                        img.removeAttribute('data-src');
                     }
                 } catch (e) {
                     console.error('Failed to load image:', filename, e);
