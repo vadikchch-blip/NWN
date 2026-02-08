@@ -405,7 +405,6 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 icon: "diamond",
                 podcast: "podcasts/Правитель.mp3",
                 animations: ["animations/Правитель.MP4", "animations/Правитель 2.MP4"],
-                images: ["colors/ruler-yes.png", "colors/ruler-no.png"],
                 brands: ["CARHARTT", "LACOSTE", "FRED PERRY", "NEW BALANCE", "NIKE", "ZNY", "SHU", "CASIO"],
                 content: {
                     desc: "Роскошь, дорогие бренды, часы, статус. «Нос в кокосе». Если для Любовника важна красота, то для Правителя — цена и статус. Он хочет подчеркнуть свое величие.",
@@ -628,7 +627,34 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                                 <p class="body-text text-lg">${data.content.desc}<\/p>
                             <\/div>
 
-                            ${data.podcast ? `
+                            ${data.podcast ? (data.id === 'ruler' ? `
+                            <div class="podcast-player ruler-glass-player overflow-hidden relative" style="padding: 10px 14px; background: rgba(255,255,255,0.70); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                                <div class="flex items-center gap-3 relative z-10">
+                                    <button 
+                                        onclick="togglePodcast('${data.podcast}', this)" 
+                                        class="podcast-play-btn flex-shrink-0 flex items-center justify-center transition-all hover:scale-105"
+                                        style="width: 36px; height: 36px; border-radius: 50%; background: #1A1A1A; box-shadow: 0 1px 4px rgba(0,0,0,0.10);"
+                                        data-podcast="${data.podcast}"
+                                        data-playing="false">
+                                        <span class="material-symbols-outlined text-white text-lg play-icon">play_arrow<\/span>
+                                        <span class="material-symbols-outlined text-white text-lg pause-icon hidden">pause<\/span>
+                                    <\/button>
+                                    <div class="flex-1 min-w-0">
+                                        <div style="font-size: 12px; font-weight: 500; color: #1A1A1A; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Подкаст: ${data.name}<\/div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="podcast-time" style="font-size: 10px; color: #888; min-width: 28px;">0:00<\/span>
+                                            <div class="flex-1 overflow-hidden cursor-pointer" style="height: 3px; background: rgba(0,0,0,0.08); border-radius: 2px;" onclick="seekPodcast(event, this)">
+                                                <div class="podcast-progress transition-all" style="width: 0%; height: 100%; background: #1A1A1A; border-radius: 2px;"><\/div>
+                                            <\/div>
+                                            <span class="podcast-duration" style="font-size: 10px; color: #888; min-width: 32px; text-align: right;">--:--<\/span>
+                                        <\/div>
+                                    <\/div>
+                                    <div class="podcast-loading hidden">
+                                        <div class="animate-spin rounded-full h-5 w-5 border-2 border-[#1A1A1A] border-t-transparent"><\/div>
+                                    <\/div>
+                                <\/div>
+                            <\/div>
+                            ` : `
                             <div class="podcast-player p-4 bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-xl overflow-hidden relative">
                                 <canvas class="podcast-visualizer absolute inset-0 w-full h-full opacity-30"><\/canvas>
                                 <div class="flex items-center gap-4 relative z-10">
@@ -655,7 +681,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                                     <\/div>
                                 <\/div>
                             <\/div>
-                            ` : ''}
+                            `) : ''}
 
                             ${data.content.strategy ? `
                             <div class="p-6 bg-[#FAFAFA] border border-[#E6E6E6] rounded-xl relative overflow-hidden group">
@@ -712,8 +738,13 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                             <\/div>
                             `}
 
-                            <!-- Product Gallery -->
-                            ${data.id !== 'intro' ? `
+                            <!-- Product Gallery / Color Environment -->
+                            ${data.id === 'ruler' ? `
+                            <div class="py-6 px-1">
+                                <h3 style="font-size: 13px; font-weight: 500; letter-spacing: 0.12em; color: #1A1A1A; margin-bottom: 12px;">ЦВЕТОВАЯ СРЕДА<\/h3>
+                                <p style="font-size: 14px; line-height: 1.7; color: #333; font-weight: 400;">Основа — нейтральная и приглушённая гамма. Цвет используется как акцент и не должен доминировать. Избегай «сладких» пастелей и слишком лёгких тонов — они снимают статус. Лучше меньше цвета, но точнее.<\/p>
+                            <\/div>
+                            ` : data.id !== 'intro' ? `
                             <div class="grid grid-cols-2 gap-2">
                                 ${data.images ? `
                                 <div class="bg-transparent rounded-xl overflow-hidden relative" style="aspect-ratio: 1/1;">
