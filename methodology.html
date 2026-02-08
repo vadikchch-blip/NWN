@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWN — Методология</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .nwn-logo {
+            font-family: "Playfair Display", serif;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-8 md:px-12 lg:px-16 py-6 border-b border-[#EBEBEB]">
+        <div class="flex items-center gap-2">
+            <span class="nwn-logo text-xl">nwn</span>
+            <span class="text-[#BCBCBC] text-lg font-light mx-1">(</span>
+            <span class="text-[#BCBCBC] text-lg font-light">—</span>
+            <span class="text-[#BCBCBC] text-lg font-light mx-1">)</span>
+            <span class="text-lg font-light tracking-wide">методология</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-8">
+            <a href="#sections" class="text-sm text-[#666] hover:text-black transition-colors">разделы</a>
+            <a href="#about" class="text-sm text-[#666] hover:text-black transition-colors">о проекте</a>
+            <a href="#contacts" class="text-sm text-[#666] hover:text-black transition-colors">контакты</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="px-8 md:px-12 lg:px-16 py-12 md:py-16 max-w-[1400px]">
+
+        <!-- Section Title -->
+        <div id="sections" class="mb-10 md:mb-14">
+            <h1 class="text-4xl md:text-5xl lg:text-[56px] font-light tracking-tight leading-[1.1] mb-4">основные разделы</h1>
+            <p class="text-[15px] text-[#888] font-light leading-relaxed">база для понимания клиента, продукта и себя в системе NWN.</p>
+        </div>
+
+        <!-- Card Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+
+            <!-- Row 1 -->
+
+            <!-- Card 01 — Должностная инструкция (large) -->
+            <div class="md:col-span-6 border border-[#E5E5E5] rounded-lg p-7 md:p-8 flex flex-col justify-between min-h-[260px] md:min-h-[300px] hover:border-[#CCC] transition-colors">
+                <div>
+                    <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-5">01</div>
+                    <h2 class="text-2xl md:text-[28px] font-medium leading-tight tracking-tight mb-4">должностная<br>инструкция</h2>
+                    <p class="text-[13px] text-[#777] font-light leading-relaxed max-w-[340px]">права, обязанности и профессиональные стандарты команды. правила игры внутри проекта nwn.</p>
+                </div>
+                <div class="mt-6">
+                    <a href="#" class="text-[13px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                </div>
+            </div>
+
+            <!-- Card 02 — Мануал по продажам -->
+            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-7 md:p-8 flex flex-col justify-between min-h-[260px] md:min-h-[300px] hover:border-[#CCC] transition-colors">
+                <div>
+                    <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-5">02</div>
+                    <h2 class="text-xl md:text-[22px] font-medium leading-tight tracking-tight mb-4">мануал<br>по продажам</h2>
+                    <p class="text-[13px] text-[#777] font-light leading-relaxed">техники коммуникации, tone of voice и стандарты обслуживания. как превратить покупку в эстетический опыт.</p>
+                </div>
+                <div class="mt-6">
+                    <a href="#" class="text-[13px] text-black font-normal hover:text-[#555] transition-colors">изучить архетипы →</a>
+                </div>
+            </div>
+
+            <!-- Card 03 — Архетипы клиентов -->
+            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-7 md:p-8 flex flex-col justify-between min-h-[260px] md:min-h-[300px] hover:border-[#CCC] transition-colors">
+                <div>
+                    <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-5">03</div>
+                    <h2 class="text-xl md:text-[22px] font-medium leading-tight tracking-tight mb-4">архетипы<br>клиентов</h2>
+                    <p class="text-[13px] text-[#777] font-light leading-relaxed">психология покупателей, понимание ценностей, языка и мотивации людей, представленных в магазине.</p>
+                </div>
+                <div class="mt-6">
+                    <a href="/index.html" class="text-[13px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                </div>
+            </div>
+
+            <!-- Row 2 -->
+
+            <!-- Card 04 — Визуальный мерчандайзинг -->
+            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-6 md:p-7 flex flex-col justify-between min-h-[220px] md:min-h-[240px] hover:border-[#CCC] transition-colors">
+                <div>
+                    <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-4">04</div>
+                    <h2 class="text-lg md:text-xl font-medium leading-tight tracking-tight mb-3">визуальный<br>мерчандайзинг</h2>
+                    <p class="text-[12px] text-[#777] font-light leading-relaxed">правила выкладки, витрина, зонирование. как пространство магазина работает на продажу.</p>
+                </div>
+                <div class="mt-5">
+                    <a href="#" class="text-[12px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                </div>
+            </div>
+
+            <!-- Card 05 — История брендов -->
+            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-6 md:p-7 flex flex-col justify-between min-h-[220px] md:min-h-[240px] hover:border-[#CCC] transition-colors">
+                <div>
+                    <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-4">05</div>
+                    <h2 class="text-lg md:text-xl font-medium leading-tight tracking-tight mb-3">история<br>брендов</h2>
+                    <p class="text-[12px] text-[#777] font-light leading-relaxed">путь nwn и философия брендированного пространства, философия марок, представленных в магазине.</p>
+                </div>
+                <div class="mt-5">
+                    <a href="#" class="text-[12px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                </div>
+            </div>
+
+            <!-- Card (—) — Постоянное обновление (dark) -->
+            <div class="md:col-span-6 bg-[#1A1A1A] text-white rounded-lg p-6 md:p-7 flex flex-col justify-between min-h-[220px] md:min-h-[240px]">
+                <div>
+                    <div class="flex items-center gap-2 mb-5">
+                        <span class="text-xs text-[#777] font-light">(</span>
+                        <span class="text-xs text-[#777] font-light">—</span>
+                        <span class="text-xs text-[#777] font-light">)</span>
+                        <span class="text-sm font-medium tracking-tight ml-1">постоянное обновление</span>
+                    </div>
+                    <p class="text-[13px] text-[#999] font-light leading-relaxed max-w-[400px]">Разбор материалов, мембран, типов плетения...</p>
+                </div>
+                <div class="mt-5">
+                    <a href="#" class="text-[12px] text-[#999] font-normal hover:text-white transition-colors">перейти к разделу →</a>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>
