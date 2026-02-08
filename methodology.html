@@ -21,6 +21,36 @@
             font-weight: 600;
             letter-spacing: -0.02em;
         }
+        /* Standard card — soft diffuse shadow */
+        .card-standard {
+            background: #FFFFFF;
+            border: 1px solid #EBEBEB;
+            border-radius: 10px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+            transition: box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .card-standard:hover {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+            border-color: #DDD;
+        }
+        /* Accent card — archetype, gray bg */
+        .card-accent {
+            background: #F5F5F5;
+            border: 1px solid #E8E8E8;
+            border-radius: 10px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .card-accent:hover {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            border-color: #D5D5D5;
+        }
+        /* Service card — dark */
+        .card-service {
+            background: #1A1A1A;
+            border-radius: 10px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.10);
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -53,83 +83,83 @@
         <!-- Card Grid -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
 
-            <!-- Row 1 -->
+            <!-- ═══ Row 1 ═══ -->
 
-            <!-- Card 01 — Должностная инструкция (large) -->
-            <div class="md:col-span-6 border border-[#E5E5E5] rounded-lg p-7 md:p-8 flex flex-col justify-between min-h-[260px] md:min-h-[300px] hover:border-[#CCC] transition-colors">
+            <!-- 01 — Должностная инструкция (standard, wide) -->
+            <a href="#" class="card-standard md:col-span-5 p-7 md:p-8 flex flex-col justify-between min-h-[270px] md:min-h-[290px] no-underline text-inherit">
                 <div>
                     <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-5">01</div>
-                    <h2 class="text-2xl md:text-[28px] font-medium leading-tight tracking-tight mb-4">должностная<br>инструкция</h2>
-                    <p class="text-[13px] text-[#777] font-light leading-relaxed max-w-[340px]">права, обязанности и профессиональные стандарты команды. правила игры внутри проекта nwn.</p>
+                    <h2 class="text-2xl md:text-[26px] font-semibold leading-[1.15] tracking-tight mb-4">должностная<br>инструкция</h2>
+                    <p class="text-[13px] text-[#777] font-light leading-relaxed max-w-[320px]">права, обязанности и профессиональные стандарты команды. правила игры внутри проекта nwn.</p>
                 </div>
-                <div class="mt-6">
-                    <a href="#" class="text-[13px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                <div class="mt-6 pt-1">
+                    <span class="text-[13px] text-black font-normal">перейти к разделу →</span>
                 </div>
-            </div>
+            </a>
 
-            <!-- Card 02 — Мануал по продажам -->
-            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-7 md:p-8 flex flex-col justify-between min-h-[260px] md:min-h-[300px] hover:border-[#CCC] transition-colors">
+            <!-- 02 — Мануал по продажам (standard) -->
+            <a href="#" class="card-standard md:col-span-4 p-7 md:p-8 flex flex-col justify-between min-h-[270px] md:min-h-[290px] no-underline text-inherit">
                 <div>
                     <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-5">02</div>
-                    <h2 class="text-xl md:text-[22px] font-medium leading-tight tracking-tight mb-4">мануал<br>по продажам</h2>
+                    <h2 class="text-xl md:text-[22px] font-semibold leading-[1.15] tracking-tight mb-4">мануал<br>по продажам</h2>
                     <p class="text-[13px] text-[#777] font-light leading-relaxed">техники коммуникации, tone of voice и стандарты обслуживания. как превратить покупку в эстетический опыт.</p>
                 </div>
-                <div class="mt-6">
-                    <a href="#" class="text-[13px] text-black font-normal hover:text-[#555] transition-colors">изучить архетипы →</a>
+                <div class="mt-6 pt-1">
+                    <span class="text-[13px] text-black font-normal">изучить архетипы →</span>
                 </div>
-            </div>
+            </a>
 
-            <!-- Card 03 — Архетипы клиентов -->
-            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-7 md:p-8 flex flex-col justify-between min-h-[260px] md:min-h-[300px] hover:border-[#CCC] transition-colors">
+            <!-- 03 — Архетипы клиентов (ACCENT — gray bg, visually linked to archetype pages) -->
+            <a href="/index.html" class="card-accent md:col-span-3 p-7 md:p-8 flex flex-col justify-between min-h-[270px] md:min-h-[290px] no-underline text-inherit">
                 <div>
-                    <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-5">03</div>
-                    <h2 class="text-xl md:text-[22px] font-medium leading-tight tracking-tight mb-4">архетипы<br>клиентов</h2>
-                    <p class="text-[13px] text-[#777] font-light leading-relaxed">психология покупателей, понимание ценностей, языка и мотивации людей, представленных в магазине.</p>
+                    <div class="text-xs text-[#999] font-medium tracking-wide mb-5">03</div>
+                    <h2 class="text-xl md:text-[22px] font-semibold leading-[1.15] tracking-tight mb-4">архетипы<br>клиентов</h2>
+                    <p class="text-[13px] text-[#666] font-light leading-relaxed">психология покупателей, понимание ценностей, языка и мотивации людей, представленных в магазине.</p>
                 </div>
-                <div class="mt-6">
-                    <a href="/index.html" class="text-[13px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                <div class="mt-6 pt-1">
+                    <span class="text-[13px] text-black font-normal">перейти к разделу →</span>
                 </div>
-            </div>
+            </a>
 
-            <!-- Row 2 -->
+            <!-- ═══ Row 2 ═══ -->
 
-            <!-- Card 04 — Визуальный мерчандайзинг -->
-            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-6 md:p-7 flex flex-col justify-between min-h-[220px] md:min-h-[240px] hover:border-[#CCC] transition-colors">
+            <!-- 04 — Визуальный мерчандайзинг (standard, compact) -->
+            <a href="#" class="card-standard md:col-span-3 p-6 md:p-7 flex flex-col justify-between min-h-[230px] md:min-h-[250px] no-underline text-inherit">
                 <div>
                     <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-4">04</div>
-                    <h2 class="text-lg md:text-xl font-medium leading-tight tracking-tight mb-3">визуальный<br>мерчандайзинг</h2>
+                    <h2 class="text-lg md:text-xl font-semibold leading-[1.15] tracking-tight mb-3">визуальный<br>мерчандайзинг</h2>
                     <p class="text-[12px] text-[#777] font-light leading-relaxed">правила выкладки, витрина, зонирование. как пространство магазина работает на продажу.</p>
                 </div>
-                <div class="mt-5">
-                    <a href="#" class="text-[12px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                <div class="mt-5 pt-1">
+                    <span class="text-[12px] text-black font-normal">перейти к разделу →</span>
                 </div>
-            </div>
+            </a>
 
-            <!-- Card 05 — История брендов -->
-            <div class="md:col-span-3 border border-[#E5E5E5] rounded-lg p-6 md:p-7 flex flex-col justify-between min-h-[220px] md:min-h-[240px] hover:border-[#CCC] transition-colors">
+            <!-- 05 — История брендов (standard, compact) -->
+            <a href="#" class="card-standard md:col-span-3 p-6 md:p-7 flex flex-col justify-between min-h-[230px] md:min-h-[250px] no-underline text-inherit">
                 <div>
                     <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-4">05</div>
-                    <h2 class="text-lg md:text-xl font-medium leading-tight tracking-tight mb-3">история<br>брендов</h2>
+                    <h2 class="text-lg md:text-xl font-semibold leading-[1.15] tracking-tight mb-3">история<br>брендов</h2>
                     <p class="text-[12px] text-[#777] font-light leading-relaxed">путь nwn и философия брендированного пространства, философия марок, представленных в магазине.</p>
                 </div>
-                <div class="mt-5">
-                    <a href="#" class="text-[12px] text-black font-normal hover:text-[#555] transition-colors">перейти к разделу →</a>
+                <div class="mt-5 pt-1">
+                    <span class="text-[12px] text-black font-normal">перейти к разделу →</span>
                 </div>
-            </div>
+            </a>
 
-            <!-- Card (—) — Постоянное обновление (dark) -->
-            <div class="md:col-span-6 bg-[#1A1A1A] text-white rounded-lg p-6 md:p-7 flex flex-col justify-between min-h-[220px] md:min-h-[240px]">
+            <!-- (—) — Постоянное обновление (SERVICE — dark) -->
+            <div class="card-service md:col-span-6 text-white p-6 md:p-7 flex flex-col justify-between min-h-[230px] md:min-h-[250px]">
                 <div>
-                    <div class="flex items-center gap-2 mb-5">
-                        <span class="text-xs text-[#777] font-light">(</span>
-                        <span class="text-xs text-[#777] font-light">—</span>
-                        <span class="text-xs text-[#777] font-light">)</span>
-                        <span class="text-sm font-medium tracking-tight ml-1">постоянное обновление</span>
+                    <div class="flex items-center gap-1 mb-5">
+                        <span class="text-xs text-[#666] font-light">(</span>
+                        <span class="text-[11px] text-[#666] font-light tracking-wide">—</span>
+                        <span class="text-xs text-[#666] font-light">)</span>
+                        <span class="text-[15px] font-medium tracking-tight ml-2">постоянное обновление</span>
                     </div>
-                    <p class="text-[13px] text-[#999] font-light leading-relaxed max-w-[400px]">Разбор материалов, мембран, типов плетения...</p>
+                    <p class="text-[13px] text-[#888] font-light leading-relaxed max-w-[400px]">Разбор материалов, мембран, типов плетения...</p>
                 </div>
-                <div class="mt-5">
-                    <a href="#" class="text-[12px] text-[#999] font-normal hover:text-white transition-colors">перейти к разделу →</a>
+                <div class="mt-5 pt-1">
+                    <a href="#" class="text-[12px] text-[#888] font-normal hover:text-white transition-colors">перейти к разделу →</a>
                 </div>
             </div>
 
