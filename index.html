@@ -207,6 +207,8 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
 .mob-nav-toggle{display:flex}
 .mob-nav-collapsible{display:none}
 .mob-nav-open .mob-nav-collapsible{display:flex}
+.mob-nav-open{max-height:80vh;overflow-y:auto}
+#nav-container.mob-nav-collapsible{max-height:50vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 }
 @media(min-width:768px){
 .mob-nav-toggle{display:none!important}
@@ -1127,6 +1129,29 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             };
             if (video.readyState >= 1) show();
             else video.addEventListener('loadedmetadata', show);
+
+            // Retry with alternative paths if video fails to load
+            const baseName = video.dataset.src;
+            if (!baseName) return;
+            const altPaths = [
+                'animations/' + baseName,
+                baseName.replace('.mp4', '.MP4'),
+                'animations/' + baseName.replace('.mp4', '.MP4')
+            ];
+            let altIdx = 0;
+            video.addEventListener('error', async function retry() {
+                if (altIdx >= altPaths.length) return;
+                const tryPath = altPaths[altIdx++];
+                console.warn('Intro video failed, trying:', tryPath);
+                try {
+                    const resp = await fetch('/audio-url?filename=' + encodeURIComponent(tryPath));
+                    if (resp.ok) {
+                        const d = await resp.json();
+                        video.src = d.url;
+                        video.load();
+                    }
+                } catch(e) { console.error('Fallback failed:', tryPath, e); }
+            });
         }
 
         // Stop podcast when navigating to different archetype
