@@ -377,7 +377,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 name: "Введение",
                 group: "Start",
                 icon: "menu_book",
-                introVideo: "animations/nwn-архетипы-введение.mp4",
+                introVideo: "nwn-архетипы-введение.mp4",
                 content: {
                     desc: "Архетипы помогают понимать клиента с точки зрения его глубинных потребностей и мотивации. Поняв, к какому архетипу относится человек, ты сможешь выбрать корректную стратегию общения и продаж и предложить тот сервис, которого он на самом деле ждёт.",
                     quote: "Определи запрос человека для качественного предложения и максимального сервиса."
@@ -1068,11 +1068,21 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             const video = document.getElementById('intro-video-el');
             const overlay = document.getElementById('intro-video-overlay');
             if (!video) return;
+            // If src not loaded yet, skip
+            if (!video.getAttribute('src')) {
+                console.warn('Intro video source not loaded yet');
+                return;
+            }
             if (video.paused) {
-                video.play();
                 video.muted = false;
                 video.controls = true;
                 if (overlay) overlay.style.display = 'none';
+                video.play().catch(function(e) {
+                    console.error('Play failed:', e);
+                    // Retry muted (autoplay policy)
+                    video.muted = true;
+                    video.play();
+                });
             }
         }
 
@@ -1105,7 +1115,9 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             const videos = document.querySelectorAll('.archetype-video[data-src]');
             for (const video of videos) {
                 const filename = video.dataset.src;
-                if (!filename || video.src) continue;
+                if (!filename) continue;
+                // Skip if already has a blob/http source set
+                if (video.getAttribute('src')) continue;
                 
                 try {
                     const response = await fetch(`/audio-url?filename=${encodeURIComponent(filename)}`);
@@ -1113,6 +1125,8 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                         const data = await response.json();
                         video.src = data.url;
                         video.load();
+                    } else {
+                        console.warn('Video URL failed:', filename, response.status);
                     }
                 } catch (e) {
                     console.error('Failed to load video:', filename, e);
