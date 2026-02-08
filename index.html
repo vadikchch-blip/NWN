@@ -377,10 +377,10 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                 name: "Введение",
                 group: "Start",
                 icon: "menu_book",
+                introVideo: "animations/nwn-архетипы-введение.mp4",
                 content: {
-                    desc: "Это был лихой палеозой. Карл Густав Юнг придумал архетипы, чтобы мы понимали, с кем имеем дело. Архетип — это фундамент личности. Поняв его, ты сможешь выбрать идеальную стратегию продаж и подарить клиенту тот самый сервис, которого мы от тебя ждем.",
-                    quote: "Определи запрос человека для качественного предложения и максимального сервиса.",
-                    imageQuery: "abstract minimalist geometry art black and white"
+                    desc: "Архетипы помогают понимать клиента с точки зрения его глубинных потребностей и мотивации. Поняв, к какому архетипу относится человек, ты сможешь выбрать корректную стратегию общения и продаж и предложить тот сервис, которого он на самом деле ждёт.",
+                    quote: "Определи запрос человека для качественного предложения и максимального сервиса."
                 }
             },
             {
@@ -635,7 +635,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                         <!-- Left Column: Text -->
                         <div class="lg:col-span-7 space-y-8">
                             <div>
-                                <h3 class="font-medium text-sm uppercase tracking-widest mb-3 text-[#8B8E93]">Суть<\/h3>
+                                ${data.id !== 'intro' ? `<h3 class="font-medium text-sm uppercase tracking-widest mb-3 text-[#8B8E93]">Суть<\/h3>` : ''}
                                 <p class="body-text text-lg">${data.content.desc}<\/p>
                             <\/div>
 
@@ -702,8 +702,29 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
 
                         <!-- Right Column: Visuals -->
                         <div class="lg:col-span-5 space-y-6">
-                            <!-- Hero Animation or Image -->
-                            ${data.animations ? `
+                            <!-- Hero Animation / Intro Video / Image -->
+                            ${data.introVideo ? `
+                            <div>
+                                <div class="w-full aspect-video bg-[#E8E8E8] overflow-hidden rounded relative cursor-pointer group" id="intro-video-wrap" onclick="playIntroVideo()">
+                                    <video 
+                                        class="archetype-video w-full h-full object-cover"
+                                        playsinline
+                                        preload="metadata"
+                                        data-src="${data.introVideo}"
+                                        id="intro-video-el">
+                                    <\/video>
+                                    <div id="intro-video-overlay" class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+                                        <div class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                                            <span class="material-symbols-outlined text-black text-2xl" style="margin-left: 2px;">play_arrow<\/span>
+                                        <\/div>
+                                    <\/div>
+                                    <div id="intro-video-duration" class="absolute bottom-3 right-3 bg-black/50 px-2 py-0.5 text-[10px] text-white tracking-widest backdrop-blur-sm rounded font-medium"><\/div>
+                                <\/div>
+                                <div class="mt-2">
+                                    <span style="font-size: 11px; color: #999; letter-spacing: 0.04em;">Введение в архетипы клиентов<\/span>
+                                <\/div>
+                            <\/div>
+                            ` : data.animations ? `
                             <div class="w-full aspect-[3/4] bg-[#1a1a1a] overflow-hidden rounded relative">
                                 <div class="animation-container w-full h-full overflow-y-auto snap-y snap-mandatory" style="scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none;">
                                     ${data.animations.map((anim, i) => `
@@ -726,7 +747,6 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                                 <img src="/image?query=${encodeURIComponent(data.content.moodQuery || data.content.imageQuery)}&aspect=3:4" 
                                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter saturate-0 group-hover:saturate-100" 
                                      alt="${data.name} Style">
-                                <div class="absolute bottom-4 left-4 bg-white/90 px-3 py-1 text-[10px] uppercase tracking-widest backdrop-blur-sm">Mood<\/div>
                             <\/div>
                             `}
 
@@ -1043,13 +1063,40 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
+        // Intro video — click to play
+        function playIntroVideo() {
+            const video = document.getElementById('intro-video-el');
+            const overlay = document.getElementById('intro-video-overlay');
+            if (!video) return;
+            if (video.paused) {
+                video.play();
+                video.muted = false;
+                video.controls = true;
+                if (overlay) overlay.style.display = 'none';
+            }
+        }
+
+        // Show intro video duration once metadata loads
+        function initIntroDuration() {
+            const video = document.getElementById('intro-video-el');
+            const badge = document.getElementById('intro-video-duration');
+            if (!video || !badge) return;
+            const show = () => {
+                if (video.duration && !isNaN(video.duration)) {
+                    badge.textContent = formatTime(video.duration);
+                }
+            };
+            if (video.readyState >= 1) show();
+            else video.addEventListener('loadedmetadata', show);
+        }
+
         // Stop podcast when navigating to different archetype
         const originalLoadArchetype = loadArchetype;
         loadArchetype = function(index) {
             stopCurrentPodcast();
             originalLoadArchetype(index);
             // Load videos and images after content is rendered
-            setTimeout(loadArchetypeVideos, 200);
+            setTimeout(() => { loadArchetypeVideos(); initIntroDuration(); }, 200);
         };
 
         // Load videos and images with signed URLs
