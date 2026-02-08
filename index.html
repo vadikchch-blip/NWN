@@ -1099,9 +1099,9 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             const video = document.getElementById('intro-video-el');
             const overlay = document.getElementById('intro-video-overlay');
             if (!video) return;
-            // If src not loaded yet, skip
-            if (!video.getAttribute('src')) {
-                console.warn('Intro video source not loaded yet');
+            // If src not loaded yet or no valid source
+            if (!video.getAttribute('src') || video.error) {
+                console.warn('Intro video source not available. Check R2 bucket for the file.');
                 return;
             }
             if (video.paused) {
@@ -1112,7 +1112,10 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                     console.error('Play failed:', e);
                     // Retry muted (autoplay policy)
                     video.muted = true;
-                    video.play();
+                    video.play().catch(function(e2) {
+                        console.error('Muted play also failed:', e2);
+                        if (overlay) overlay.style.display = '';
+                    });
                 });
             }
         }
@@ -1136,13 +1139,23 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
             const altPaths = [
                 'animations/' + baseName,
                 baseName.replace('.mp4', '.MP4'),
-                'animations/' + baseName.replace('.mp4', '.MP4')
+                'animations/' + baseName.replace('.mp4', '.MP4'),
+                'Введение.MP4',
+                'animations/Введение.MP4',
+                'Введение.mp4',
+                'animations/Введение.mp4',
+                'введение.MP4',
+                'animations/введение.MP4',
+                'nwn-архетипы-введение.MP4'
             ];
             let altIdx = 0;
-            video.addEventListener('error', async function retry() {
-                if (altIdx >= altPaths.length) return;
+            async function tryNextIntroSrc() {
+                if (altIdx >= altPaths.length) {
+                    console.error('Intro video: all paths exhausted. Available paths tried:', [baseName].concat(altPaths));
+                    return;
+                }
                 const tryPath = altPaths[altIdx++];
-                console.warn('Intro video failed, trying:', tryPath);
+                console.warn('Intro video: trying fallback', altIdx + '/' + altPaths.length, tryPath);
                 try {
                     const resp = await fetch('/audio-url?filename=' + encodeURIComponent(tryPath));
                     if (resp.ok) {
@@ -1150,8 +1163,9 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
                         video.src = d.url;
                         video.load();
                     }
-                } catch(e) { console.error('Fallback failed:', tryPath, e); }
-            });
+                } catch(e) { console.error('Fallback fetch failed:', tryPath, e); }
+            }
+            video.addEventListener('error', tryNextIntroSrc);
         }
 
         // Stop podcast when navigating to different archetype
