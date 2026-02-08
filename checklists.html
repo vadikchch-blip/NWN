@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWN — Чек-листы продавца</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body{font-family:"Inter",Arial,sans-serif;background:#fff;color:#000;-webkit-font-smoothing:antialiased}
+        .nwn-logo{font-family:"Playfair Display",serif;font-weight:600;letter-spacing:-0.02em}
+        .section-divider{border:none;border-top:1px solid #EBEBEB;margin:40px 0}
+        .cl-card{background:#FAFAFA;border:1px solid #EBEBEB;border-radius:10px;padding:20px 24px;cursor:pointer;transition:box-shadow .25s,border-color .25s}
+        .cl-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06);border-color:#DDD}
+        .cl-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F0F0F0}
+        .cl-item:last-child{border-bottom:none}
+        .cl-item input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:#1A1A1A;flex-shrink:0}
+        .cl-item label{font-size:14px;color:#333;font-weight:300;line-height:1.5;cursor:pointer}
+        .cl-item input:checked+label{color:#AAA;text-decoration:line-through}
+        .filter-btn{padding:6px 16px;border:1px solid #E6E6E6;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#888;background:#fff;cursor:pointer;transition:all .15s}
+        .filter-btn:hover,.filter-btn.active{border-color:#1A1A1A;color:#1A1A1A}
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-6 md:px-12 lg:px-16 py-5 border-b border-[#EBEBEB]">
+        <div class="flex items-center gap-2">
+            <a href="/methodology.html" class="nwn-logo text-xl hover:opacity-70 transition-opacity">nwn</a>
+            <span class="text-[#BCBCBC] text-lg font-light mx-1">(</span>
+            <span class="text-[#BCBCBC] text-lg font-light">—</span>
+            <span class="text-[#BCBCBC] text-lg font-light mx-1">)</span>
+            <span class="text-lg font-light tracking-wide">чек-листы</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-8">
+            <a href="/di.html" class="text-sm text-[#666] hover:text-black transition-colors">инструкция</a>
+            <a href="/reglament.html" class="text-sm text-[#666] hover:text-black transition-colors">регламент</a>
+            <a href="/methodology.html" class="text-sm text-[#666] hover:text-black transition-colors">разделы</a>
+        </nav>
+    </header>
+
+    <div class="max-w-[900px] mx-auto px-6 md:px-12 py-8 md:py-12">
+
+        <!-- Title -->
+        <div class="mb-8">
+            <h1 class="text-2xl md:text-3xl lg:text-4xl font-light tracking-tight leading-[1.15] mb-3 uppercase" style="letter-spacing:0.02em">Чек-листы<br>продавца NWN</h1>
+            <p class="text-[14px] text-[#888] font-light leading-relaxed">Операционный уровень — как делать работу правильно.</p>
+            <p class="text-[13px] text-[#AAA] font-light mt-2">Чек-листы являются обязательным инструментом работы продавца. Их цель — поддержание порядка, сервиса и предотвращение нарушений регламентов.</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-8">
+            <div class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3">Магазин</div>
+            <div class="flex flex-wrap gap-2 mb-4" id="store-filters">
+                <button class="filter-btn active" onclick="filterStore('all')">Все</button>
+                <button class="filter-btn" onclick="filterStore('foreign')">Зарубежные бренды</button>
+                <button class="filter-btn" onclick="filterStore('local')">Локальные бренды</button>
+                <button class="filter-btn" onclick="filterStore('nwn')">NWN</button>
+            </div>
+        </div>
+
+        <!-- Checklist Cards -->
+        <div class="space-y-3" id="checklists-grid"></div>
+
+        <!-- Expanded Checklist -->
+        <div id="checklist-detail" class="hidden mt-8">
+            <button onclick="closeChecklist()" class="text-[13px] text-[#888] hover:text-black transition-colors mb-4">← Назад к списку</button>
+            <div id="checklist-content"></div>
+        </div>
+
+        <!-- Related Documents -->
+        <hr class="section-divider" style="margin-top:64px">
+        <div class="mb-8">
+            <div class="text-[10px] uppercase tracking-widest text-[#AAA] mb-4">Связанные документы</div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="/di.html" class="flex-1 border border-[#EBEBEB] rounded-lg p-4 hover:border-[#CCC] transition-colors" style="text-decoration:none;color:inherit">
+                    <div class="text-[12px] text-[#AAA] mb-1">01</div>
+                    <div class="text-[14px] font-medium">Должностная инструкция</div>
+                    <div class="text-[12px] text-[#888] mt-1">Роль и ожидания →</div>
+                </a>
+                <a href="/reglament.html" class="flex-1 border border-[#EBEBEB] rounded-lg p-4 hover:border-[#CCC] transition-colors" style="text-decoration:none;color:inherit">
+                    <div class="text-[12px] text-[#AAA] mb-1">02</div>
+                    <div class="text-[14px] font-medium">Регламент ответственности</div>
+                    <div class="text-[12px] text-[#888] mt-1">Виды нарушений и штрафы →</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Important Rule -->
+        <div style="background:#F7F7F7;border-left:3px solid #1A1A1A;padding:16px 20px;border-radius:0 6px 6px 0;margin-bottom:32px">
+            <p class="text-[13px] text-[#333] font-light leading-relaxed">Чек-листы не обсуждаются. Чек-листы не интерпретируются. Чек-листы выполняются.<br>Именно чек-листы являются основным инструментом предотвращения штрафов.</p>
+        </div>
+
+    </div>
+
+    <script>
+    const checklists = [
+        {
+            id: 'open',
+            title: 'Открытие смены',
+            store: 'all',
+            desc: 'Общий для всех магазинов',
+            items: [
+                'Проверить, как закрылась предыдущая смена',
+                'Выполнить задачи, не закрытые предыдущей сменой',
+                'Провести утреннюю уборку торгового зала',
+                'Проверить состояние витрин, рейлов и полок',
+                'Убедиться, что весь товар находится в торговом зале',
+                'Проверить наличие анкет для новых клиентов',
+                'Проверить наличие пакетов для товара',
+                'Проверить наличие дисконтных карт',
+                'Проверить наличие визиток',
+                'Проверить наличие стикеров',
+                'Проверить наличие ценников',
+                'Проверить наличие мешков для пылесоса',
+                'Проверить наличие чистящих средств'
+            ]
+        },
+        {
+            id: 'close',
+            title: 'Закрытие смены',
+            store: 'all',
+            desc: 'Общий для всех магазинов',
+            items: [
+                'Навести порядок в торговом зале',
+                'Вернуть проданные за смену вещи со склада',
+                'Отпарить все вещи и развесить их на свои места',
+                'Проверить порядок в примерочных',
+                'Проверить наличие набивки во всей обуви',
+                'Убедиться, что магазин и склад закрыты и поставлены на охрану'
+            ]
+        },
+        {
+            id: 'order-store',
+            title: 'Порядок в магазине',
+            store: 'foreign',
+            storeAlso: 'local',
+            desc: 'Для магазинов зарубежных и локальных брендов',
+            sections: [
+                { title: 'Входная зона', items: ['Порядок на ступеньках','Коврики на входе выровнены','Коробки у входа отсутствуют'] },
+                { title: 'Торговый зал', items: ['Полы подметены и вымыты','Все стеклянные поверхности чистые','Фабрикоры в чистоте','На ресепшене порядок','Вещи и обувь расставлены ровно','Все вещи отпарены','На новых позициях — этикетка NEW','На скидочных позициях — этикетка SALE'] },
+                { title: 'Примерочные', items: ['Чисто','Коврики на месте','Нет лишних вещей и вешалок'] },
+                { title: 'Витрины и фасады', items: ['Фасады чистые','Двери и окна помыты','Подоконники чистые','Вывески без грязи и паутины'] },
+                { title: 'Склад', items: ['Порядок','Товар разложен логично','Общий визуальный порядок'] }
+            ]
+        },
+        {
+            id: 'order-nwn',
+            title: 'Порядок — магазин NWN',
+            store: 'nwn',
+            desc: 'Отдельный чек-лист, логика пространства отличается',
+            items: [
+                'Общий порядок торгового зала',
+                'Аккуратная выкладка товара',
+                'Чистые поверхности и мебель',
+                'Примерочные в порядке',
+                'Товар представлен полностью и корректно',
+                'Визуальный шум отсутствует'
+            ]
+        },
+        {
+            id: 'receiving',
+            title: 'Приёмка товара',
+            store: 'all',
+            desc: 'Общий для всех магазинов',
+            items: [
+                'Принять груз от транспортной компании',
+                'Помочь администратору в сортировке по номенклатуре',
+                'Проверить товар на брак',
+                'Наклеить ценники',
+                'Развесить и разложить товар по местам'
+            ]
+        },
+        {
+            id: 'weekly',
+            title: 'Еженедельная уборка',
+            store: 'all',
+            desc: 'По графику',
+            items: [
+                'Глубокая уборка торгового зала',
+                'Мытьё фасадов, дверей, окон',
+                'Чистка витрин',
+                'Уборка складских помещений',
+                'Проверка состояния оборудования'
+            ]
+        }
+    ];
+
+    let currentFilter = 'all';
+
+    function filterStore(store) {
+        currentFilter = store;
+        document.querySelectorAll('#store-filters .filter-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        renderGrid();
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('checklists-grid');
+        const detail = document.getElementById('checklist-detail');
+        detail.classList.add('hidden');
+        grid.classList.remove('hidden');
+
+        const filtered = checklists.filter(cl => {
+            if (currentFilter === 'all') return true;
+            return cl.store === currentFilter || cl.store === 'all' || cl.storeAlso === currentFilter;
+        });
+
+        grid.innerHTML = filtered.map(cl => `
+            <div class="cl-card" onclick="openChecklist('${cl.id}')">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-[15px] font-medium tracking-tight">${cl.title}</h3>
+                        <p class="text-[12px] text-[#888] mt-1">${cl.desc}</p>
+                    </div>
+                    <span class="text-[12px] text-black">открыть →</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openChecklist(id) {
+        const cl = checklists.find(c => c.id === id);
+        if (!cl) return;
+
+        document.getElementById('checklists-grid').classList.add('hidden');
+        const detail = document.getElementById('checklist-detail');
+        const content = document.getElementById('checklist-content');
+        detail.classList.remove('hidden');
+
+        let html = `<h2 class="text-xl font-medium tracking-tight mb-1">${cl.title}</h2>`;
+        html += `<p class="text-[12px] text-[#888] mb-6">${cl.desc}</p>`;
+
+        if (cl.sections) {
+            for (const sec of cl.sections) {
+                html += `<h4 class="text-[11px] font-medium uppercase tracking-widest text-[#8B8E93] mt-6 mb-3">${sec.title}</h4>`;
+                html += sec.items.map((item, i) => `
+                    <div class="cl-item">
+                        <input type="checkbox" id="${cl.id}-${sec.title}-${i}">
+                        <label for="${cl.id}-${sec.title}-${i}">${item}</label>
+                    </div>
+                `).join('');
+            }
+        } else {
+            html += cl.items.map((item, i) => `
+                <div class="cl-item">
+                    <input type="checkbox" id="${cl.id}-${i}">
+                    <label for="${cl.id}-${i}">${item}</label>
+                </div>
+            `).join('');
+        }
+
+        content.innerHTML = html;
+        window.scrollTo(0, 0);
+    }
+
+    function closeChecklist() {
+        document.getElementById('checklist-detail').classList.add('hidden');
+        document.getElementById('checklists-grid').classList.remove('hidden');
+    }
+
+    renderGrid();
+    </script>
+
+</body>
+</html>
