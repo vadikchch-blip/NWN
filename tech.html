@@ -280,6 +280,50 @@
         area.innerHTML = html;
     }
 
+    const R2_BASE = 'nwn-storage/technology/';
+
+    // Try loading images from R2 for a card
+    async function loadModalImages(name, container) {
+        // Generate possible filenames from card name
+        const slug = name.toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[()«»"']/g, '')
+            .replace(/ё/g, 'е');
+        const slugUnder = slug.replace(/-/g, '_');
+        const slugClean = name.replace(/\s+/g, ' ').trim();
+
+        // Try multiple path/ext combinations
+        const attempts = [];
+        for (const ext of ['.jpg', '.png', '.webp', '.jpeg']) {
+            attempts.push(R2_BASE + slug + ext);
+            attempts.push(R2_BASE + slugUnder + ext);
+            attempts.push(R2_BASE + slugClean + ext);
+            attempts.push(R2_BASE + slug + '/1' + ext);
+            attempts.push(R2_BASE + slug + '/01' + ext);
+        }
+
+        let found = 0;
+        for (const path of attempts) {
+            if (found >= 2) break;
+            try {
+                const resp = await fetch('/audio-url?filename=' + encodeURIComponent(path));
+                if (!resp.ok) continue;
+                const data = await resp.json();
+                if (!data.url) continue;
+                // Test if image actually exists by loading it
+                const img = new Image();
+                img.onload = function() {
+                    if (this.naturalWidth > 0) {
+                        container.innerHTML += `<img src="${data.url}" alt="${name}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:300px;object-fit:cover">`;
+                        found++;
+                    }
+                };
+                img.onerror = function() {};
+                img.src = data.url;
+            } catch(e) {}
+        }
+    }
+
     function openModal(id) {
         const c = cards.find(x => x.id === id);
         if (!c) return;
@@ -289,7 +333,11 @@
         const paragraphs = c.body.split('\n').filter(l => l.trim());
 
         let html = `<h2 style="font-size:24px;font-weight:500;margin-bottom:4px">${c.name}</h2>`;
-        html += `<div style="font-size:11px;color:#AAA;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:20px">${c.cat}</div>`;
+        html += `<div style="font-size:11px;color:#AAA;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px">${c.cat}</div>`;
+
+        // Image container (populated async)
+        html += `<div id="modal-images" style="margin-bottom:16px"></div>`;
+
         html += '<div class="modal-text">';
 
         for (const p of paragraphs) {
@@ -318,6 +366,10 @@
         document.getElementById('tech-modal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
         updateNav();
+
+        // Load images async
+        const imgContainer = document.getElementById('modal-images');
+        loadModalImages(c.name, imgContainer);
     }
 
     function closeModal() {
