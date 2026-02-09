@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWN — Методика продаж · Ритм активных продаж</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght@24,400" rel="stylesheet">
+    <style>
+        body{font-family:"Inter",Arial,sans-serif;background:#fff;color:#000;-webkit-font-smoothing:antialiased}
+        .nwn-logo{font-family:"Playfair Display",serif;font-weight:600;letter-spacing:-0.02em}
+        .section-divider{border:none;border-top:1px solid #EBEBEB;margin:48px 0}
+        .note-block{background:#F7F7F7;border-left:3px solid #1A1A1A;padding:16px 20px;border-radius:0 6px 6px 0;margin:16px 0}
+        .step-card{border:1px solid #EBEBEB;border-radius:10px;overflow:hidden;transition:border-color .2s}
+        .step-card:hover{border-color:#DDD}
+        .step-header{padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+        .step-body{display:none;padding:0 20px 20px;font-size:14px;color:#444;font-weight:300;line-height:1.7}
+        .step-card.open .step-body{display:block}
+        .step-card.open .step-arrow{transform:rotate(180deg)}
+        .step-num{font-size:11px;font-weight:500;color:#AAA;letter-spacing:0.06em;min-width:28px}
+        .step-title{font-size:15px;font-weight:500;color:#1A1A1A}
+        .step-arrow{transition:transform .2s;color:#CCC;font-size:20px}
+        .rhythm-phase{text-align:center;flex:1;padding:20px 12px}
+        .rhythm-phase h4{font-size:13px;font-weight:600;letter-spacing:0.04em;margin-bottom:6px}
+        .rhythm-phase p{font-size:12px;color:#888;font-weight:300;line-height:1.5}
+        .rhythm-arrow{color:#DDD;font-size:28px;display:flex;align-items:center}
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Hero Block -->
+    <section class="bg-[#111] text-white min-h-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 py-20">
+        <div class="max-w-[700px]">
+            <div class="text-[11px] uppercase tracking-[0.2em] text-[#666] mb-8">NWN · Методика продаж</div>
+            <h1 class="text-4xl md:text-5xl lg:text-[64px] font-light leading-[1.1] tracking-tight mb-8">Ритм активных<br>продаж</h1>
+            <p class="text-lg md:text-xl font-light text-[#AAA] leading-relaxed mb-6">Продажа — это управление напряжением.<br>Без давления нет энергии. Без пауз нет доверия.</p>
+            <p class="text-[13px] font-light text-[#555] leading-relaxed max-w-[480px]">В NWN продавец ведёт клиента к решению, управляя ритмом диалога и состоянием выбора.</p>
+        </div>
+    </section>
+
+    <!-- Header (sticky after hero) -->
+    <header class="sticky top-0 z-30 bg-white flex items-center justify-between px-6 md:px-12 lg:px-16 py-4 border-b border-[#EBEBEB]">
+        <div class="flex items-center gap-2">
+            <a href="/methodology.html" class="nwn-logo text-lg hover:opacity-70 transition-opacity">nwn</a>
+            <span class="text-[#DDD] text-sm font-light mx-1">·</span>
+            <span class="text-sm font-light text-[#888]">методика продаж</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-6">
+            <a href="#intro" class="text-[12px] text-[#888] hover:text-black transition-colors">введение</a>
+            <a href="#rhythm" class="text-[12px] text-[#888] hover:text-black transition-colors">ритм</a>
+            <a href="#stages" class="text-[12px] text-[#888] hover:text-black transition-colors">этапы</a>
+            <a href="#memo" class="text-[12px] text-[#888] hover:text-black transition-colors">памятка</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-[800px] mx-auto px-6 md:px-12 py-10 md:py-14">
+
+        <!-- Intro -->
+        <section id="intro">
+            <p class="text-[16px] text-[#333] font-light leading-[1.8] mb-4">Продажи в NWN — это не обслуживание. Это управляемый процесс влияния.</p>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-4">Большинство клиентов:</p>
+            <ul class="list-disc pl-5 text-[15px] text-[#555] font-light leading-[1.8] space-y-1 mb-4">
+                <li>не понимают, чего хотят</li>
+                <li>боятся ошибиться</li>
+                <li>не готовы принять решение самостоятельно</li>
+            </ul>
+            <p class="text-[15px] text-[#333] font-light leading-[1.8] mb-4">Если продавец не ведёт — клиент уходит.</p>
+            <p class="text-[15px] text-[#333] font-light leading-[1.8]">Задача продавца NWN — не «быть удобным», а создать ритм, в котором клиенту комфортно принять решение и купить.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Key Principle -->
+        <section>
+            <h2 class="text-xl font-medium tracking-tight mb-4">Ключевой принцип методики</h2>
+            <p class="text-[15px] text-[#333] font-light leading-[1.8] mb-3">В NWN мы используем волновую модель продаж, основанную на управлении вниманием клиента.</p>
+            <div class="note-block">
+                <p class="text-[15px] font-medium text-[#1A1A1A]">Продажа = чередование давления и расслабления</p>
+                <p class="text-[14px] text-[#555] mt-1">Не напор. Не уговоры. Ритм.</p>
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Rhythm Phases -->
+        <section id="rhythm">
+            <h2 class="text-xl font-medium tracking-tight mb-6">Формула ритма</h2>
+
+            <!-- Visual Rhythm Block -->
+            <div class="flex items-stretch border border-[#EBEBEB] rounded-xl overflow-hidden mb-8">
+                <div class="rhythm-phase bg-[#F5F5F5]">
+                    <h4>Давление</h4>
+                    <p>Включить клиента, создать напряжение, сузить поле выбора</p>
+                </div>
+                <div class="rhythm-arrow">→</div>
+                <div class="rhythm-phase">
+                    <h4>Провал</h4>
+                    <p>Дать ощущение безопасности и контроля</p>
+                </div>
+                <div class="rhythm-arrow">→</div>
+                <div class="rhythm-phase bg-[#F5F5F5]">
+                    <h4>Расслабление</h4>
+                    <p>Закрепить решение и перевести в покупку</p>
+                </div>
+            </div>
+
+            <p class="text-[14px] text-[#888] font-light mb-8">Если убрать любой элемент — продажа ломается.</p>
+
+            <!-- Phase Details -->
+            <div class="space-y-8">
+
+                <div>
+                    <h3 class="text-[16px] font-medium mb-3">Давление <span class="text-[#AAA] font-light">(инициация энергии)</span></h3>
+                    <p class="text-[14px] text-[#555] font-light leading-[1.7] mb-3">Что делает продавец:</p>
+                    <ul class="list-disc pl-5 text-[14px] text-[#555] font-light leading-[1.7] space-y-1 mb-3">
+                        <li>первым выходит на контакт</li>
+                        <li>задаёт уточняющие вопросы</li>
+                        <li>предлагает направление</li>
+                        <li>ограничивает варианты</li>
+                    </ul>
+                    <p class="text-[13px] text-[#888] italic mb-2">«Давай сразу задам пару вопросов, чтобы не тратить твоё время»</p>
+                    <p class="text-[13px] text-[#888] italic mb-2">«Если коротко — есть два варианта, которые тебе подойдут»</p>
+                    <div class="note-block"><p class="text-[13px]">Давление не грубое, но активное. Продавец не ждёт — он ведёт.</p></div>
+                </div>
+
+                <div>
+                    <h3 class="text-[16px] font-medium mb-3">Провал <span class="text-[#AAA] font-light">(снятие напряжения)</span></h3>
+                    <p class="text-[14px] text-[#555] font-light leading-[1.7] mb-3">Что делает продавец:</p>
+                    <ul class="list-disc pl-5 text-[14px] text-[#555] font-light leading-[1.7] space-y-1 mb-3">
+                        <li>замедляется</li>
+                        <li>подтверждает выбор клиента</li>
+                        <li>убирает напор</li>
+                        <li>даёт паузу</li>
+                    </ul>
+                    <p class="text-[13px] text-[#888] italic mb-2">«В целом ты сейчас рассуждаешь правильно»</p>
+                    <p class="text-[13px] text-[#888] italic mb-2">«Можешь не торопиться, я рядом»</p>
+                    <div class="note-block"><p class="text-[13px]">Если не делать провал — давление начинает раздражать. Провал = доверие.</p></div>
+                </div>
+
+                <div>
+                    <h3 class="text-[16px] font-medium mb-3">Расслабление <span class="text-[#AAA] font-light">(фиксация удовольствия)</span></h3>
+                    <p class="text-[14px] text-[#555] font-light leading-[1.7] mb-3">Что делает продавец:</p>
+                    <ul class="list-disc pl-5 text-[14px] text-[#555] font-light leading-[1.7] space-y-1 mb-3">
+                        <li>красиво оформляет выбор</li>
+                        <li>усиливает ценность</li>
+                        <li>переводит решение в действие</li>
+                    </ul>
+                    <p class="text-[13px] text-[#888] italic mb-2">«Тогда логично взять именно это»</p>
+                    <p class="text-[13px] text-[#888] italic mb-2">«Берём, ты потом спасибо скажешь»</p>
+                    <div class="note-block"><p class="text-[13px]">Финал должен быть спокойным, не агрессивным. Решение уже принято — его просто оформляют.</p></div>
+                </div>
+
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Why active sales -->
+        <section>
+            <h2 class="text-xl font-medium tracking-tight mb-4">Почему активные продажи — обязательны</h2>
+            <p class="text-[15px] text-[#333] font-light leading-[1.8] mb-3">90% клиентов не осознают свои реальные потребности.</p>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Если продавец ждёт вопросов, не ведёт диалог, не создаёт напряжение — клиент уходит без покупки.</p>
+            <div class="note-block"><p class="text-[14px] font-medium">Отсутствие давления = отсутствие продажи.</p></div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Forbidden Errors -->
+        <section>
+            <h2 class="text-xl font-medium tracking-tight mb-4">Ошибки, которые запрещены в NWN</h2>
+            <ul class="space-y-2 text-[15px] text-[#555] font-light leading-[1.7]">
+                <li>Полное отсутствие давления</li>
+                <li>Постоянный напор без пауз</li>
+                <li>«Посмотрите сами, если что — я здесь»</li>
+                <li>Попытка быть «приятным» вместо полезного</li>
+                <li>Продажа ради философии без чека</li>
+            </ul>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Money -->
+        <section>
+            <h2 class="text-xl font-medium tracking-tight mb-4">Деньги — это не стыдно</h2>
+            <p class="text-[15px] text-[#333] font-light leading-[1.8] mb-3">В NWN: мы уважаем эстетику, мы уважаем клиента, мы зарабатываем деньги.</p>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Продажа — это помощь клиенту принять решение, рост среднего чека, рост ценности бренда.</p>
+            <div class="note-block"><p class="text-[14px] font-medium">Чек — это показатель качества работы продавца.</p></div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Role -->
+        <section>
+            <h2 class="text-xl font-medium tracking-tight mb-4">Роль продавца NWN</h2>
+            <p class="text-[15px] text-[#333] font-light leading-[1.8] mb-3">Продавец — это навигатор, фильтр, источник уверенности.</p>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8]">Он управляет ритмом, держит клиента в тонусе, не боится быть активным.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Sales Stages Timeline -->
+        <section id="stages">
+            <h2 class="text-xl font-medium tracking-tight mb-2">Обязательные этапы продаж</h2>
+            <p class="text-[13px] text-[#888] font-light mb-6">Продажа — это управление энергией клиента. Каждый этап раскрывается по клику.</p>
+
+            <div class="space-y-2" id="stages-list">
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">01</span><span class="step-title">Вход в контакт</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Не просто поздороваться, а включить человека в поле магазина.</p>
+                        <p class="mb-1"><strong>Действия:</strong></p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>Приветствуем всегда, чем бы ни были заняты</li><li>Улыбка, спокойный голос, уверенное присутствие</li><li>Обращение на «Вы»</li><li>Даём короткую паузу (человек должен выдохнуть)</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Мы не навязываемся, но и не исчезаем. Человек должен чувствовать: «я здесь не один».</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">02</span><span class="step-title">Открытие диалога</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Взять инициативу, не задавив.</p>
+                        <p class="mb-1"><strong>Открывающие фразы:</strong></p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>«Давайте сэкономлю вам время»</li><li>«У нас как раз есть интересные новинки»</li><li>«Присматриваете для себя или на подарок?»</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Ритм: лёгкое давление → сразу шаг назад (ты инициировал, но дал свободу).</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">03</span><span class="step-title">Анализ покупателя</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Понять, кто перед тобой, ещё до вопросов.</p>
+                        <p class="mb-1"><strong>Смотрим:</strong></p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>Как одет</li><li>Куда идёт взгляд</li><li>Бренды / сейл / новинки</li><li>Поведение тела</li></ul>
+                        <p class="mb-1"><strong>Делаем:</strong> Предварительно определяем архетип. Выбираем стиль общения.</p>
+                        <p class="text-[13px] text-[#888] italic">Вопросы — минимально, без допроса. Человек пришёл за эмоцией, а не за анкетой.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">04</span><span class="step-title">Выявление потребностей</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Дать человеку почувствовать, что его слышат.</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>2–3 наводящих вопроса</li><li>Подтверждаем догадку: «Правильно понимаю, вам важно…?»</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Здесь давление минимальное. Ты подстраиваешься, чтобы потом снова повести.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">05</span><span class="step-title">Предложение</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Формировать спрос, а не обслуживать запрос.</p>
+                        <p class="mb-1"><strong>Ключевое правило NWN:</strong> Продавец работает первым номером.</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>Интонация, темп речи, жесты, дистанция</li><li>Плечом к плечу</li><li>Передаёшь вещь в руки</li><li>Акцентируешь детали</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Человек должен чувствовать: «Моё пространство нарушили — и мне это нравится».</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">06</span><span class="step-title">Презентация</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Не просто показать вещь, а прожить её вместе с клиентом.</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>Архетип (ценность)</li><li>Историю бренда</li><li>Технологии / комфорт / актуальность</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Ты выбираешь, что именно сейчас важно этому человеку.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">07</span><span class="step-title">Примерочная</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Максимально увеличить чек.</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>Приносим ещё варианты</li><li>Не перегружаем</li><li>Помогаем физически: завязать шнурки, поправить капюшон, подвернуть джинсы</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Это интимная зона сервиса. Здесь рождается доверие.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">08</span><span class="step-title">Допы</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Увеличение чека = твоя обязанность.</p>
+                        <p class="mb-1"><strong>Алгоритм:</strong> 1) Сначала дорогое → 2) Потом среднее → 3) Потом мелкое</p>
+                        <p class="mb-2">Если клиент пришёл за обувью — сначала вторая пара, потом одежда, потом аксессуары.</p>
+                        <p class="text-[13px] text-[#888] italic">Ты не впариваешь — ты расширяешь удовольствие.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">09</span><span class="step-title">Работа с возражениями</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Главное правило:</strong> Не спорить. Не обесценивать.</p>
+                        <p class="mb-1"><strong>Фразы-якоря:</strong></p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>«Ок, есть решение»</li><li>«Есть несколько вариантов»</li><li>«Давайте посмотрим иначе»</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Возражение = интерес, а не отказ.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">10</span><span class="step-title">Касса</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Цель:</strong> Не отпустить человека без максимума.</p>
+                        <ul class="list-disc pl-5 space-y-1"><li>Акцент на мелочи у кассы</li><li>Дотягиваем до дисконтной программы</li><li>Кратко рассказываем о преимуществах</li></ul>
+                    </div>
+                </div>
+
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div class="flex items-center gap-3"><span class="step-num">11</span><span class="step-title">Прощание</span></div>
+                        <span class="material-symbols-outlined step-arrow">expand_more</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="mb-2"><strong>Финал обязателен:</strong></p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2"><li>Помочь с пакетами</li><li>Проводить до выхода</li><li>Поздравить с покупкой</li></ul>
+                        <p class="text-[13px] text-[#888] italic">Человек должен уйти с мыслью: «Это был лучший сервис за последнее время».</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- How methodology is used -->
+        <section>
+            <h2 class="text-xl font-medium tracking-tight mb-4">Как эта методика используется дальше</h2>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Эта модель:</p>
+            <ul class="list-disc pl-5 text-[15px] text-[#555] font-light leading-[1.8] space-y-1 mb-3">
+                <li>применяется во всех архетипах</li>
+                <li>адаптируется под тип клиента</li>
+                <li>ложится в чек-листы</li>
+                <li>используется в обучении и аттестации</li>
+            </ul>
+            <div class="note-block"><p class="text-[14px] font-medium">Ритм активных продаж — фундамент всей системы.</p></div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Memo -->
+        <section id="memo">
+            <div class="bg-[#FAFAFA] border border-[#E6E6E6] rounded-xl p-6 md:p-8">
+                <h2 class="text-lg font-medium tracking-tight mb-4">Если коротко</h2>
+                <ul class="space-y-2 text-[15px] text-[#333] font-light leading-[1.6]">
+                    <li>Инициируй контакт</li>
+                    <li>Управляй ритмом</li>
+                    <li>Не бойся давления</li>
+                    <li>Делай паузы</li>
+                    <li>Закрывай чек</li>
+                </ul>
+                <p class="text-[14px] text-[#888] font-light mt-6">Давление → расслабление → снова давление → забота</p>
+                <p class="text-[14px] text-[#333] font-light mt-2">Если ритм пойман — человек покупает больше и уходит довольным.</p>
+            </div>
+        </section>
+
+        <!-- Navigation to other docs -->
+        <div class="mt-12 flex flex-col sm:flex-row gap-3">
+            <a href="/methodology.html" class="flex-1 border border-[#EBEBEB] rounded-lg p-4 hover:border-[#CCC] transition-colors" style="text-decoration:none;color:inherit">
+                <div class="text-[14px] font-medium">← Разделы методологии</div>
+            </a>
+            <a href="/index.html" class="flex-1 border border-[#EBEBEB] rounded-lg p-4 hover:border-[#CCC] transition-colors" style="text-decoration:none;color:inherit">
+                <div class="text-[14px] font-medium">Архетипы клиентов →</div>
+            </a>
+        </div>
+
+    </main>
+
+    <script>
+    function toggleStep(card) {
+        card.classList.toggle('open');
+    }
+    </script>
+
+</body>
+</html>
