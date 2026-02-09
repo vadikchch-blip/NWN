@@ -126,9 +126,13 @@ app.get('/audio-url', async (req, res) => {
             });
         }
 
+        // Allow optional bucket override (for nwn-storage etc.)
+        const ALLOWED_BUCKETS = [R2_BUCKET_NAME, 'nwn-storage'];
+        const bucket = req.query.bucket && ALLOWED_BUCKETS.includes(req.query.bucket) ? req.query.bucket : R2_BUCKET_NAME;
+
         // Create the GetObject command with response headers
         const command = new GetObjectCommand({
-            Bucket: R2_BUCKET_NAME,
+            Bucket: bucket,
             Key: filename,
             // Force inline display (streaming) instead of attachment (download)
             ResponseContentDisposition: 'inline',
@@ -141,7 +145,7 @@ app.get('/audio-url', async (req, res) => {
             expiresIn: URL_EXPIRATION_SECONDS
         });
 
-        console.log(`✅ Generated signed URL for: ${filename} (expires in ${URL_EXPIRATION_SECONDS}s)`);
+        console.log(`✅ Generated signed URL for: ${bucket}/${filename} (expires in ${URL_EXPIRATION_SECONDS}s)`);
 
         res.json({
             success: true,

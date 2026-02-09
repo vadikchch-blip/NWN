@@ -280,47 +280,135 @@
         area.innerHTML = html;
     }
 
-    const R2_BASE = 'nwn-storage/technology/';
+    // Exact image mapping: card name → R2 filename in nwn-storage bucket, technology/ folder
+    const IMAGE_MAP = {
+        'Air Max': 'AIR MAX.png',
+        'Adiprene+': 'ADIPRENE+.png',
+        'Abzorb': 'ABZORB.png',
+        'AirWair': 'AirWair.png',
+        'Ahar': 'AHAR.png',
+        'Boost': 'BOOST.png',
+        'ComfyCush': 'ComfyCush.png',
+        'Cordura': 'CORDURA.png',
+        'Dryvent': 'DRYVENT .png',
+        'Dri-Fit': 'DRI-FIT.png',
+        'Canvas': 'CANVAS.png',
+        'C.P. Shell Recycled': 'C.P. Shell Recycled .png',
+        'Cushlon': 'Cushlon.png',
+        'Bounce': 'BOUNCE.png',
+        'David-TC': 'David-TC.png',
+        'Flyknit': 'FLYKNIT.png',
+        'Gore-Tex Infinium': 'GORE-TEX INFINIUM.png',
+        'DD Shell': 'DD Shell.png',
+        'Chrome-R': 'Chrome-R.png',
+        'Gore-Tex': 'GORE-TEX.png',
+        'Feltro Bi-Film': 'Feltro Bi-Film.png',
+        'Gel': 'GEL.png',
+        'Guidance Line': 'Guidance Line.png',
+        'Fresh Foam': 'FRESH FOAM.png',
+        'Flymesh': 'FLYMESH.png',
+        'Ice Jacket': 'Ice Jacket.png',
+        'Lunarlon': 'LUNARLON.png',
+        'Garment Dye': 'GARMENT DYE.png',
+        'Cell': 'CELL.png',
+        'Mizuno Energy': 'MIZUNO ENERGY.png',
+        'Encap': 'ENCAP.png',
+        'Nike Acg': 'NIKE ACG.png',
+        'Lightstrike': 'LIGHTSTRIKE.png',
+        'Mizunowave': 'MIZUNOWAVE.png',
+        'Kan-D': 'Kan-D.png',
+        'Nike Shox': 'Nike Shox.png',
+        'Lambswool': 'Lambswool.png',
+        'Ortholite': 'ORTHOLITE.png',
+        'Heat Reactive': 'Heat Reactive.png',
+        'N-Lock': 'N-LOCK.png',
+        'N-Energy': 'N-ENERGY.png',
+        'Mussola Prismatica': 'Mussola Prismatica.png',
+        'Primaloft': 'PRIMALOFT SPORT.png',
+        'Nike Air Zoom': 'NIKE AIR ZOOM.png',
+        'Response Foam': 'RESPONSE FOAM.png',
+        'Nycra-R': 'Nycra-R.png',
+        'Nylon Metal': 'Nylon Metal.png',
+        'Raso Gommato': 'Raso Gommato.png',
+        'Riri': 'RIRI.png',
+        'Pigment dye': 'Pigment dye.png',
+        'Speva': 'SPEVA.png',
+        'Stability Web': 'STABILITY WEB.png',
+        'Sbs': 'SBS.png',
+        'Thermo Sensitive': 'Thermo Sensitive.png',
+        'Rubber Wool': 'Rubber Wool.png',
+        'Rip-Stop': 'RIP-STOP.png',
+        'Ykk': 'YKK.png',
+        'Stone Washed': 'STONE WASHED.png',
+        'Thinsulate': 'THINSULATE.png',
+        'Rideliner': 'RIDELINER.png',
+        'Used Wash': 'USED WASH.png',
+        'Деним': 'ДЕНИМ.png',
+        'Wool Blend': 'Wool Blend.png',
+        'Жаккардовые бирки': 'Жаккардовые бирки.png',
+        'Soft Shell': 'SOFT SHELL.png',
+        'Torsion': 'TORSION.png',
+        'Вельвет': 'Вельвет.png',
+        'Акрил': 'Акрил.png',
+        'Tela Stella': 'Tela Stella.png',
+        'Коллекция Urban Protection': 'Коллекция Urban Protection.png',
+        'Киперная лента': 'Киперная лента.png',
+        'Парусина': 'ПАРУСИНА.png',
+        'Искусственный мех': 'Искусственный мех.png',
+        'Неопрен': 'НЕОПРЕН.png',
+        'Принт на одежде': 'Принт на одежде.png',
+        'Технология Nike React': 'ТЕХНОЛОГИЯ NIKE REACT.png',
+        'Замша': 'ЗАМША.png',
+        'Твил': 'ТВИЛ.png',
+        'Футер': 'ФУТЕР.png',
+        'Флис': 'Флис.png',
+        'Хлопок': 'ХЛОПОК.png',
+        'Эва': 'ЭВА.png',
+        'Yupoong': 'Yupoong .png',
+        'Технология RS': 'Технология RS.png',
+        'Технология Liquid Reflective': 'Технология Liquid Reflective.png',
+        'Рефлектив': 'РЕФЛЕКТИВ.png',
+        'Пике': 'Пике .png',
+        'Полиуретан': 'Полиуретан.png',
+        'Каучук': 'КАУЧУК .png',
+        'Композитная кожа': 'Композитная кожа.png',
+        'Экокожа': 'ЭКОКОЖА.png',
+        'Люверс': 'ЛЮВЕРС.png',
+        'Эглет': 'ЭГЛЕТ .png',
+        'Кварц': 'Кварц.png',
+        'Технология N-Durance': 'Технология N-Durance.png'
+    };
 
-    // Try loading images from R2 for a card
     async function loadModalImages(name, container) {
-        // Generate possible filenames from card name
-        const slug = name.toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[()«»"']/g, '')
-            .replace(/ё/g, 'е');
-        const slugUnder = slug.replace(/-/g, '_');
-        const slugClean = name.replace(/\s+/g, ' ').trim();
-
-        // Try multiple path/ext combinations
-        const attempts = [];
-        for (const ext of ['.jpg', '.png', '.webp', '.jpeg']) {
-            attempts.push(R2_BASE + slug + ext);
-            attempts.push(R2_BASE + slugUnder + ext);
-            attempts.push(R2_BASE + slugClean + ext);
-            attempts.push(R2_BASE + slug + '/1' + ext);
-            attempts.push(R2_BASE + slug + '/01' + ext);
+        // Find exact filename from mapping
+        let imgFile = IMAGE_MAP[name];
+        // Also try partial match
+        if (!imgFile) {
+            for (const [key, val] of Object.entries(IMAGE_MAP)) {
+                if (name.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(name.toLowerCase())) {
+                    imgFile = val;
+                    break;
+                }
+            }
         }
+        if (!imgFile) return;
 
-        let found = 0;
-        for (const path of attempts) {
-            if (found >= 2) break;
-            try {
-                const resp = await fetch('/audio-url?filename=' + encodeURIComponent(path));
-                if (!resp.ok) continue;
-                const data = await resp.json();
-                if (!data.url) continue;
-                // Test if image actually exists by loading it
-                const img = new Image();
-                img.onload = function() {
-                    if (this.naturalWidth > 0) {
-                        container.innerHTML += `<img src="${data.url}" alt="${name}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:300px;object-fit:cover">`;
-                        found++;
-                    }
-                };
-                img.onerror = function() {};
-                img.src = data.url;
-            } catch(e) {}
+        const path = 'technology/' + imgFile;
+        try {
+            const resp = await fetch('/audio-url?filename=' + encodeURIComponent(path) + '&bucket=nwn-storage');
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data.url) return;
+            const img = new Image();
+            img.onload = function() {
+                if (this.naturalWidth > 0) {
+                    container.innerHTML = `<img src="${data.url}" alt="${name}" style="width:100%;border-radius:8px;max-height:360px;object-fit:contain;background:#F5F5F5">`;
+                }
+            };
+            img.onerror = function() {};
+            img.src = data.url;
+        } catch(e) {
+            console.warn('Image load failed for:', name, e);
         }
     }
 
