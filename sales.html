@@ -64,6 +64,7 @@
             <a href="#intro" class="text-[12px] text-[#888] hover:text-black transition-colors">введение</a>
             <a href="#rhythm" class="text-[12px] text-[#888] hover:text-black transition-colors">ритм</a>
             <a href="#stages" class="text-[12px] text-[#888] hover:text-black transition-colors">этапы</a>
+            <a href="#doubts" class="text-[12px] text-[#888] hover:text-black transition-colors">сомнения</a>
             <a href="#memo" class="text-[12px] text-[#888] hover:text-black transition-colors">памятка</a>
         </nav>
     </header>
@@ -359,6 +360,91 @@
                     </div>
                 </div>
 
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- Doubts & Dialogue Management -->
+        <section id="doubts">
+            <h2 class="text-xl font-medium tracking-tight mb-4">Работа с сомнениями и управлением диалогом</h2>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-6">Это не «ответы на возражения». Это управление ритмом диалога и укрепление позиции магазина.</p>
+
+            <!-- Competitors -->
+            <h3 class="text-[16px] font-medium mb-3">Разговор о конкурентах</h3>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Мы не обсуждаем конкурентов негативно. Мы усиливаем себя.</p>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Фокус на:</p>
+            <ul class="list-disc pl-5 text-[15px] text-[#555] font-light leading-[1.8] space-y-1 mb-4">
+                <li>10 лет работы</li>
+                <li>сервис и экспертность</li>
+                <li>возможность примерки</li>
+                <li>подбор целого образа</li>
+            </ul>
+            <div style="border-left:2px solid #E6E6E6;padding:12px 20px;margin:16px 0;background:#FAFAFA;border-radius:0 6px 6px 0">
+                <p class="text-[14px] text-[#333] italic leading-relaxed mb-2">«Мы работаем 10 лет, знаем каждый бренд лично и помогаем собрать образ, а не просто продать вещь.»</p>
+                <p class="text-[14px] text-[#333] italic leading-relaxed">«У нас можно примерить, потрогать, сравнить — и уйти с тем, что точно подходит.»</p>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #F0F0F0;margin:32px 0">
+
+            <!-- Originality -->
+            <h3 class="text-[16px] font-medium mb-3">Про оригинальность и поддержку клиента</h3>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Мы работаем только с официальной продукцией и всегда берём ситуацию под контроль, если у клиента возникают вопросы.</p>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Вся продукция имеет официальную маркировку. Мы уверенно стоим за каждой вещью, которую продаём.</p>
+
+            <hr style="border:none;border-top:1px solid #F0F0F0;margin:32px 0">
+
+            <!-- FAQ Accordion -->
+            <h3 class="text-[16px] font-medium mb-4">Частые вопросы клиентов</h3>
+
+            <div class="space-y-2" id="faq-list">
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header"><span class="step-title">Почему так дорого?</span><span class="material-symbols-outlined step-arrow">expand_more</span></div>
+                    <div class="step-body"><p>Цена складывается из качества материалов, технологий производства и работы бренда. Мы подбираем вещи, которые служат долго и выглядят на свою стоимость. Здесь нет случайных наценок — есть честная цена за честный продукт.</p></div>
+                </div>
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header"><span class="step-title">Видел дешевле</span><span class="material-symbols-outlined step-arrow">expand_more</span></div>
+                    <div class="step-body"><p>Возможно. Мы работаем с официальными поставками, обеспечиваем сервис и помогаем с подбором. Цена включает уверенность в том, что вещь оригинальная, подходит именно тебе и прослужит так, как должна.</p></div>
+                </div>
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header"><span class="step-title">Это оригинал?</span><span class="material-symbols-outlined step-arrow">expand_more</span></div>
+                    <div class="step-body"><p>Да. Мы работаем напрямую с официальными дистрибьюторами. Вся продукция имеет маркировку и подтверждение подлинности. Если возникнут вопросы по конкретной вещи — мы всегда готовы показать документацию.</p></div>
+                </div>
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header"><span class="step-title">Сделано в Китае?</span><span class="material-symbols-outlined step-arrow">expand_more</span></div>
+                    <div class="step-body"><p>Большинство мировых брендов размещают производство в Азии — это стандарт индустрии. Качество определяется не страной пошива, а технологиями, контролем и материалами. Nike, Adidas, The North Face — все производят там, где обеспечивают лучшие условия для своих стандартов.</p></div>
+                </div>
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header"><span class="step-title">Почему скидка?</span><span class="material-symbols-outlined step-arrow">expand_more</span></div>
+                    <div class="step-body"><p>Скидка — это часть ротации коллекций. Новые поступления вытесняют предыдущие, и мы даём возможность взять отличную вещь по более комфортной цене. Качество при этом остаётся тем же.</p></div>
+                </div>
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header"><span class="step-title">Когда новое поступление?</span><span class="material-symbols-outlined step-arrow">expand_more</span></div>
+                    <div class="step-body"><p>Поступления приходят регулярно, но конкретные даты зависят от логистики. Лучший способ не пропустить — подписаться на наши соцсети или оставить контакт. Мы сообщим первыми.</p></div>
+                </div>
+                <div class="step-card" onclick="toggleStep(this)">
+                    <div class="step-header"><span class="step-title">Почему не натуральные материалы?</span><span class="material-symbols-outlined step-arrow">expand_more</span></div>
+                    <div class="step-body"><p>Современные синтетические материалы часто превосходят натуральные по функциональности: они легче, прочнее, лучше дышат и быстрее сохнут. Бренды выбирают состав исходя из задачи вещи, а не ради экономии.</p></div>
+                </div>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #F0F0F0;margin:32px 0">
+
+            <!-- Response choice -->
+            <h3 class="text-[16px] font-medium mb-3">Выбор ответа</h3>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Ответ выбирается исходя из типа клиента и его особенностей. Один и тот же вопрос от разных людей требует разной подачи — чувствуй человека.</p>
+
+            <hr style="border:none;border-top:1px solid #F0F0F0;margin:32px 0">
+
+            <!-- Other projects -->
+            <h3 class="text-[16px] font-medium mb-3">Упоминание других проектов</h3>
+            <p class="text-[15px] text-[#555] font-light leading-[1.8] mb-3">Другие проекты компании упоминаются обязательно. Продавец не должен забывать это делать. Упоминание должно быть естественным и органичным — как часть разговора, а не как реклама.</p>
+
+            <hr style="border:none;border-top:1px solid #F0F0F0;margin:32px 0">
+
+            <!-- Final note -->
+            <div class="note-block">
+                <p class="text-[14px] text-[#333] leading-relaxed">Современные стандарты производства отличаются от того, что было 10–15 лет назад. Мы честно объясняем свойства товара, не обещаем невозможного, но уверенно стоим за тем, что продаём.</p>
             </div>
         </section>
 
