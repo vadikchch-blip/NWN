@@ -29,10 +29,16 @@
         .step-num{font-size:11px;font-weight:500;color:#AAA;letter-spacing:0.06em;min-width:28px}
         .step-title{font-size:15px;font-weight:500;color:#1A1A1A}
         .step-arrow{transition:transform .2s;color:#CCC;font-size:20px}
+        .rhythm-wrap{display:flex;align-items:stretch;border:1px solid #EBEBEB;border-radius:12px;overflow:hidden}
         .rhythm-phase{text-align:center;flex:1;padding:20px 12px}
         .rhythm-phase h4{font-size:13px;font-weight:600;letter-spacing:0.04em;margin-bottom:6px}
         .rhythm-phase p{font-size:12px;color:#888;font-weight:300;line-height:1.5}
-        .rhythm-arrow{color:#DDD;font-size:28px;display:flex;align-items:center}
+        .rhythm-arrow{color:#DDD;font-size:28px;display:flex;align-items:center;justify-content:center}
+        @media(max-width:540px){
+            .rhythm-wrap{flex-direction:column}
+            .rhythm-phase{padding:16px 20px;text-align:left}
+            .rhythm-arrow{font-size:20px;padding:4px 0;transform:rotate(90deg)}
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -97,7 +103,7 @@
             <h2 class="text-xl font-medium tracking-tight mb-6">Формула ритма</h2>
 
             <!-- Visual Rhythm Block -->
-            <div class="flex items-stretch border border-[#EBEBEB] rounded-xl overflow-hidden mb-8">
+            <div class="rhythm-wrap mb-8">
                 <div class="rhythm-phase bg-[#F5F5F5]">
                     <h4>Давление</h4>
                     <p>Включить клиента, создать напряжение, сузить поле выбора</p>
