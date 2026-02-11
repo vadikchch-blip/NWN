@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWN — Установка</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1A1A1A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NWN">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght@24,400" rel="stylesheet">
+    <style>
+        body{font-family:"Inter",Arial,sans-serif;background:#111;color:#fff;-webkit-font-smoothing:antialiased;margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
+        .nwn-logo{font-family:"Playfair Display",serif;font-weight:600;letter-spacing:-0.02em}
+        .step{display:flex;align-items:flex-start;gap:14px;text-align:left;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+        .step:last-child{border-bottom:none}
+        .step-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;margin-top:1px}
+        .step-text{font-size:14px;font-weight:300;line-height:1.6;color:#ccc}
+        .step-text strong{font-weight:500;color:#fff}
+        .installed-msg{display:none}
+    </style>
+</head>
+<body>
+
+    <div style="max-width:380px;width:100%">
+
+        <!-- Logo -->
+        <div class="nwn-logo" style="font-size:48px;margin-bottom:8px">nwn</div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:40px">методология</div>
+
+        <!-- Not installed state -->
+        <div id="install-guide">
+            <h1 style="font-size:22px;font-weight:400;margin-bottom:8px;letter-spacing:-0.01em">Установи приложение</h1>
+            <p style="font-size:13px;color:#888;font-weight:300;line-height:1.6;margin-bottom:32px">Работает без App Store. Открывается как обычное приложение — без браузера и адресной строки.</p>
+
+            <!-- iOS instructions -->
+            <div id="ios-steps">
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#555;margin-bottom:12px;text-align:left">iPhone / iPad</div>
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Нажми <strong>«Поделиться»</strong> внизу экрана <span style="font-size:18px;vertical-align:middle">&#x2934;&#xFE0E;</span></div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Выбери <strong>«На экран Домой»</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Нажми <strong>«Добавить»</strong> — готово</div>
+                </div>
+            </div>
+
+            <!-- Android instructions -->
+            <div id="android-steps" style="display:none">
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#555;margin-bottom:12px;text-align:left">Android</div>
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Нажми <strong>три точки</strong> в правом верхнем углу</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Выбери <strong>«Установить приложение»</strong> или <strong>«Добавить на главный экран»</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Подтверди — готово</div>
+                </div>
+            </div>
+
+            <div style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06)">
+                <p style="font-size:12px;color:#444;font-weight:300;line-height:1.6">После установки приложение появится на домашнем экране. Открывай его перед сменой.</p>
+            </div>
+        </div>
+
+        <!-- Already installed / standalone mode -->
+        <div class="installed-msg" id="installed-msg">
+            <h1 style="font-size:22px;font-weight:400;margin-bottom:16px">Приложение установлено</h1>
+            <p style="font-size:14px;color:#888;font-weight:300;line-height:1.6;margin-bottom:32px">Добро пожаловать в NWN.</p>
+            <a href="/methodology.html" style="display:inline-block;padding:14px 32px;background:#fff;color:#111;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;border-radius:8px;text-decoration:none">Открыть методологию</a>
+        </div>
+
+    </div>
+
+    <script>
+    // Detect platform
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    if (isAndroid) {
+        document.getElementById('ios-steps').style.display = 'none';
+        document.getElementById('android-steps').style.display = 'block';
+    }
+
+    // If already in standalone mode — redirect to app
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+        document.getElementById('install-guide').style.display = 'none';
+        document.getElementById('installed-msg').style.display = 'block';
+        // Auto-redirect after 1s
+        setTimeout(() => { window.location.href = '/methodology.html'; }, 1500);
+    }
+
+    // Register SW
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+    </script>
+
+</body>
+</html>
