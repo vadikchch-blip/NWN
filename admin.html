@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWN — Админ-панель</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght@24,400" rel="stylesheet">
+    <style>
+        body{font-family:"Inter",Arial,sans-serif;background:#fff;color:#000;-webkit-font-smoothing:antialiased}
+        .nwn-logo{font-family:"Playfair Display",serif;font-weight:600;letter-spacing:-0.02em}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8B8E93;padding:8px 10px;border-bottom:2px solid #1A1A1A}
+        td{padding:10px;border-bottom:1px solid #F0F0F0;vertical-align:middle}
+        tr:hover td{background:#FAFAFA}
+        select{border:1px solid #E6E6E6;border-radius:6px;padding:6px 10px;font-size:12px;font-family:inherit;outline:none;cursor:pointer}
+        .tab{padding:8px 20px;border:1px solid #E6E6E6;border-radius:999px;font-size:12px;color:#888;background:#fff;cursor:pointer;transition:all .15s}
+        .tab:hover,.tab.active{border-color:#1A1A1A;color:#1A1A1A;background:#F5F5F5}
+        .toggle{width:40px;height:22px;border-radius:11px;background:#E0E0E0;position:relative;cursor:pointer;transition:background .2s}
+        .toggle.on{background:#1A1A1A}
+        .toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s}
+        .toggle.on::after{left:20px}
+        .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:500}
+        .badge-admin{background:#1A1A1A;color:#fff}
+        .badge-seller{background:#E8F5E9;color:#2E7D32}
+        .badge-trainee{background:#FFF8E1;color:#F9A825}
+        .badge-candidate{background:#F5F5F5;color:#999}
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="flex items-center justify-between px-6 md:px-12 py-5 border-b border-[#EBEBEB]">
+        <div class="flex items-center gap-2">
+            <a href="/methodology.html" class="nwn-logo text-xl hover:opacity-70 transition-opacity">nwn</a>
+            <span class="text-[#DDD] mx-2">·</span>
+            <span class="text-sm font-light text-[#888]">админ-панель</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="text-[12px] text-[#888]" id="admin-name"></span>
+            <button onclick="logout()" class="text-[12px] text-[#888] hover:text-black transition-colors">Выйти</button>
+        </div>
+    </header>
+
+    <main class="max-w-[1100px] mx-auto px-6 md:px-12 py-8">
+
+        <h1 class="text-2xl font-light tracking-tight mb-6">Управление</h1>
+
+        <div class="flex gap-2 mb-8">
+            <button class="tab active" onclick="showTab('users',this)">Пользователи</button>
+            <button class="tab" onclick="showTab('access',this)">Права доступа</button>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="tab-users">
+            <div class="overflow-x-auto">
+                <table id="users-table">
+                    <thead>
+                        <tr><th>Имя</th><th>Логин</th><th>Пароль</th><th>Роль</th><th>Статус</th><th>Дата</th><th></th></tr>
+                    </thead>
+                    <tbody id="users-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Access Tab -->
+        <div id="tab-access" style="display:none">
+            <p class="text-[13px] text-[#888] mb-4">Нажмите на переключатель, чтобы изменить доступ роли к странице.</p>
+            <div class="overflow-x-auto">
+                <table id="access-table">
+                    <thead><tr id="access-header"></tr></thead>
+                    <tbody id="access-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+    const TOKEN = localStorage.getItem('nwn_token');
+    if (!TOKEN) window.location.href = '/login.html';
+
+    const hdrs = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN };
+
+    // Check admin
+    fetch('/api/auth/me', { headers: hdrs }).then(r => r.json()).then(d => {
+        if (!d.user || d.user.role_id !== 1) { alert('Доступ только для администраторов'); window.location.href = '/methodology.html'; return; }
+        document.getElementById('admin-name').textContent = d.user.display_name || d.user.username;
+    });
+
+    const ROLE_BADGES = { 1:'badge-admin', 2:'badge-seller', 3:'badge-trainee', 4:'badge-candidate' };
+    const ROLE_NAMES = { 1:'Администратор', 2:'Продавец', 3:'Стажёр', 4:'Кандидат' };
+
+    function showTab(name, btn) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-users').style.display = name === 'users' ? '' : 'none';
+        document.getElementById('tab-access').style.display = name === 'access' ? '' : 'none';
+        if (name === 'access') loadAccess();
+    }
+
+    // ── Users ──
+    async function loadUsers() {
+        const resp = await fetch('/api/admin/users', { headers: hdrs });
+        const users = await resp.json();
+        const tbody = document.getElementById('users-body');
+        tbody.innerHTML = users.map(u => `
+            <tr>
+                <td><strong>${u.display_name || '-'}</strong></td>
+                <td style="font-family:monospace;font-size:12px">${u.username}</td>
+                <td style="font-family:monospace;font-size:12px;color:#AAA">${u.password.substring(0,20)}...</td>
+                <td>
+                    <select onchange="changeRole(${u.id}, this.value)" ${u.role_id===1?'disabled':''}>
+                        <option value="1" ${u.role_id===1?'selected':''}>Администратор</option>
+                        <option value="2" ${u.role_id===2?'selected':''}>Продавец</option>
+                        <option value="3" ${u.role_id===3?'selected':''}>Стажёр</option>
+                        <option value="4" ${u.role_id===4?'selected':''}>Кандидат</option>
+                    </select>
+                </td>
+                <td>
+                    <div class="toggle ${u.is_active?'on':''}" onclick="toggleUser(${u.id})"></div>
+                </td>
+                <td style="font-size:11px;color:#AAA">${new Date(u.created_at).toLocaleDateString('ru-RU')}</td>
+                <td>${u.role_id!==1?`<button onclick="deleteUser(${u.id})" style="font-size:11px;color:#CCC;cursor:pointer;border:none;background:none" title="Удалить">✕</button>`:''}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function changeRole(id, role_id) {
+        await fetch(`/api/admin/users/${id}/role`, { method: 'PUT', headers: hdrs, body: JSON.stringify({ role_id: parseInt(role_id) }) });
+        loadUsers();
+    }
+
+    async function toggleUser(id) {
+        await fetch(`/api/admin/users/${id}/toggle`, { method: 'PUT', headers: hdrs });
+        loadUsers();
+    }
+
+    async function deleteUser(id) {
+        if (!confirm('Удалить пользователя?')) return;
+        await fetch(`/api/admin/users/${id}`, { method: 'DELETE', headers: hdrs });
+        loadUsers();
+    }
+
+    // ── Access Matrix ──
+    async function loadAccess() {
+        const resp = await fetch('/api/admin/access', { headers: hdrs });
+        const data = await resp.json();
+
+        // Group by page
+        const pages = {};
+        const roles = {};
+        data.forEach(row => {
+            if (!pages[row.slug]) pages[row.slug] = { title: row.title, accesses: {} };
+            pages[row.slug].accesses[row.role_id] = { has_access: row.has_access, page_id: row.page_id };
+            roles[row.role_id] = row.role_label;
+        });
+
+        const roleIds = Object.keys(roles).sort();
+
+        // Header
+        const header = document.getElementById('access-header');
+        header.innerHTML = '<th>Страница</th>' + roleIds.map(r => `<th style="text-align:center">${roles[r]}</th>`).join('');
+
+        // Body
+        const tbody = document.getElementById('access-body');
+        tbody.innerHTML = Object.entries(pages).map(([slug, page]) => {
+            const cells = roleIds.map(r => {
+                const a = page.accesses[r];
+                if (!a) return '<td></td>';
+                const on = a.has_access;
+                return `<td style="text-align:center"><div class="toggle ${on?'on':''}" style="margin:0 auto" onclick="toggleAccess(${r},${a.page_id},${!on})"></div></td>`;
+            }).join('');
+            return `<tr><td><strong>${page.title}</strong></td>${cells}</tr>`;
+        }).join('');
+    }
+
+    async function toggleAccess(role_id, page_id, has_access) {
+        await fetch('/api/admin/access', { method: 'PUT', headers: hdrs, body: JSON.stringify({ role_id, page_id, has_access }) });
+        loadAccess();
+    }
+
+    function logout() {
+        localStorage.removeItem('nwn_token');
+        localStorage.removeItem('nwn_user');
+        document.cookie = 'nwn_token=;path=/;max-age=0';
+        window.location.href = '/login.html';
+    }
+
+    loadUsers();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWN — Вход</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1A1A1A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body{font-family:"Inter",Arial,sans-serif;background:#fff;color:#000;-webkit-font-smoothing:antialiased;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+        .nwn-logo{font-family:"Playfair Display",serif;font-weight:600;letter-spacing:-0.02em}
+        .box{width:100%;max-width:340px}
+        input{width:100%;border:1px solid #E6E6E6;border-radius:8px;padding:12px 16px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;box-sizing:border-box}
+        input:focus{border-color:#999}
+        .btn{width:100%;padding:14px;background:#1A1A1A;color:#fff;border:none;border-radius:8px;font-size:13px;font-family:inherit;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:background .15s}
+        .btn:hover{background:#333}
+        .err{font-size:13px;color:#c00;margin-top:8px;display:none}
+        a{font-size:13px;color:#888;text-decoration:none}
+        a:hover{color:#000}
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div style="text-align:center;margin-bottom:40px">
+            <div class="nwn-logo" style="font-size:40px">nwn</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#AAA;margin-top:4px">методология</div>
+        </div>
+
+        <form onsubmit="doLogin(event)">
+            <div style="margin-bottom:12px">
+                <input type="text" id="username" placeholder="Логин" autocomplete="username" autocapitalize="none">
+            </div>
+            <div style="margin-bottom:16px">
+                <input type="password" id="password" placeholder="Пароль" autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn">Войти</button>
+            <div class="err" id="error"></div>
+        </form>
+
+        <div style="text-align:center;margin-top:24px">
+            <a href="/register.html">Нет аккаунта? Зарегистрироваться</a>
+        </div>
+    </div>
+
+    <script>
+    // If already logged in, redirect
+    const token = localStorage.getItem('nwn_token');
+    if (token) {
+        fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+            .then(r => { if (r.ok) window.location.href = '/methodology.html'; });
+    }
+
+    async function doLogin(e) {
+        e.preventDefault();
+        const err = document.getElementById('error');
+        err.style.display = 'none';
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) { err.textContent = 'Введите логин и пароль'; err.style.display = 'block'; return; }
+
+        try {
+            const resp = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await resp.json();
+
+            if (!resp.ok) { err.textContent = data.error || 'Ошибка входа'; err.style.display = 'block'; return; }
+
+            localStorage.setItem('nwn_token', data.token);
+            localStorage.setItem('nwn_user', JSON.stringify(data.user));
+            // Set cookie for server-side auth
+            document.cookie = `nwn_token=${data.token};path=/;max-age=${30*24*60*60};SameSite=Lax`;
+            window.location.href = '/methodology.html';
+        } catch (e) {
+            err.textContent = 'Ошибка соединения'; err.style.display = 'block';
+        }
+    }
+    </script>
+</body>
+</html>
