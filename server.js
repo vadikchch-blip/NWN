@@ -21,11 +21,11 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'nwn-secret-key-change-in-production-2026';
 
 // ── Database ──
-const dbUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
-const isInternal = dbUrl && dbUrl.includes('.railway.internal');
+// Prefer public URL over internal (Railway auto-injects internal DATABASE_URL which may not resolve)
+const dbUrl = process.env.DATABASE_PUBLIC_URL || process.env.DATABASE_URL;
 const pool = new Pool({
     connectionString: dbUrl,
-    ssl: isInternal ? false : (dbUrl ? { rejectUnauthorized: false } : false)
+    ssl: dbUrl ? { rejectUnauthorized: false } : false
 });
 
 // ── Middleware ──
