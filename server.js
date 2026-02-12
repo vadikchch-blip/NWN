@@ -21,9 +21,11 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'nwn-secret-key-change-in-production-2026';
 
 // ── Database ──
+const dbUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
+const isInternal = dbUrl && dbUrl.includes('.railway.internal');
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL,
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+    connectionString: dbUrl,
+    ssl: isInternal ? false : (dbUrl ? { rejectUnauthorized: false } : false)
 });
 
 // ── Middleware ──
@@ -238,8 +240,8 @@ app.post('/api/auth/login', async (req, res) => {
         const token = generateToken(user);
         res.json({ success: true, token, user: { id: user.id, username: user.username, display_name: user.display_name, role_id: user.role_id, role_name: user.role_name, role_label: user.role_label } });
     } catch (err) {
-        console.error('Login error:', err.message);
-        res.status(500).json({ error: 'Ошибка входа' });
+        console.error('Login error:', err.message, err.stack);
+        res.status(500).json({ error: 'Ошибка входа: ' + err.message });
     }
 });
 
