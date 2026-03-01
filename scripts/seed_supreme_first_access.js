@@ -79,9 +79,8 @@ function parseQty(val) {
 
 async function main() {
     if (!fs.existsSync(xlsxPath)) {
-        console.error('File not found:', xlsxPath);
-        console.error('Place "ррц Supreme.xlsx" in data/ or pass path as argument.');
-        process.exit(1);
+        console.warn('Supreme xlsx not found:', xlsxPath, '- skip seed');
+        process.exit(0);
     }
 
     const workbook = XLSX.readFile(xlsxPath);
