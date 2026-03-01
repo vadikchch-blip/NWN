@@ -23,7 +23,12 @@ const XLSX = require('xlsx');
 const doForce = process.argv.includes('--force');
 const args = process.argv.slice(2).filter(a => a !== '--force');
 const xlsxUrl = process.env.SUPREME_XLSX_URL;
-const xlsxPath = args[0] || process.env.SUPREME_XLSX_PATH || path.join(__dirname, '..', 'data', 'ррц Supreme.xlsx');
+const rootDir = path.join(__dirname, '..');
+const defaultPaths = [
+    path.join(rootDir, 'ррц Supreme.xlsx'),      // корень репо
+    path.join(rootDir, 'data', 'ррц Supreme.xlsx')
+];
+const xlsxPath = args[0] || process.env.SUPREME_XLSX_PATH;
 const overridesPath = process.env.IMAGE_KEY_OVERRIDES || path.join(__dirname, '..', 'data', 'image_key_overrides.json');
 
 const dbUrl = process.env.DATABASE_PUBLIC_URL || process.env.DATABASE_URL;
@@ -102,11 +107,16 @@ async function main() {
             console.error('Failed to fetch xlsx:', e.message);
             process.exit(1);
         }
-    } else if (fs.existsSync(xlsxPath)) {
-        workbook = XLSX.readFile(xlsxPath);
     } else {
-        console.warn('Supreme xlsx not found (no URL, no file) - skip seed');
-        process.exit(0);
+        const found = xlsxPath ? (fs.existsSync(xlsxPath) ? xlsxPath : null)
+            : defaultPaths.find(p => fs.existsSync(p));
+        if (found) {
+            workbook = XLSX.readFile(found);
+            console.log('Loaded xlsx from', found);
+        } else {
+            console.warn('Supreme xlsx not found - skip seed. Put file in repo root or data/');
+            process.exit(0);
+        }
     }
 
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
