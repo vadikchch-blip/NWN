@@ -145,7 +145,9 @@
                     }
                     return `<span class="inline-block px-3 py-1.5 rounded text-xs font-medium ${cls}" ${click}>${s.size}: ${label}</span>`;
                 }).join(' ');
-                const img = p.image_url ? `<img src="${p.image_url}" ${p.image_url_jpg ? `data-fallback="${p.image_url_jpg}"` : ''} alt="" class="w-full aspect-[3/4] object-cover rounded-t-lg" onerror="this.onerror=null;var f=this.dataset.fallback;if(f){this.src=f}">` : '<div class="w-full aspect-[3/4] bg-[#F5F5F5] rounded-t-lg flex items-center justify-center text-[#999] text-sm">нет фото</div>';
+                const fallbacks = (p.image_url_fallbacks || []).filter(Boolean);
+                const fb = fallbacks.length ? ` data-fb="${fallbacks.join('|')}"` : '';
+                const img = p.image_url ? `<img src="${p.image_url}"${fb} alt="" class="w-full aspect-[3/4] object-cover rounded-t-lg" onerror="var s=this.dataset.fb;if(s){var a=s.split('|');if(a.length){this.src=a[0];this.dataset.fb=a.slice(1).join('|')}}}">` : '<div class="w-full aspect-[3/4] bg-[#F5F5F5] rounded-t-lg flex items-center justify-center text-[#999] text-sm">нет фото</div>';
                 return `<div class="card-standard overflow-hidden"><a href="#" class="block" onclick="return false;">${img}</a><div class="p-4"><div class="font-medium mb-1">${escapeHtml(p.title)}</div><div class="text-[13px] text-[#888] mb-2">${escapeHtml(p.article)} · ${formatPrice(p.price_rrc)}</div><div class="flex flex-wrap gap-2">${sizesHtml}</div></div></div>`;
             }).join('');
         });

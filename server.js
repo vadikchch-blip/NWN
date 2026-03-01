@@ -412,8 +412,13 @@ async function validateInviteToken(token) {
 function buildImageUrl(imageKey, ext) {
     if (!imageKey || typeof imageKey !== 'string') return null;
     const prefix = R2_FIRST_ACCESS_PATH ? `${R2_FIRST_ACCESS_PATH}/` : '';
-    const e = ext || R2_FIRST_ACCESS_EXT;
-    return `${R2_PUBLIC_BASE_URL}/${prefix}${encodeURIComponent(imageKey)}${e.startsWith('.') ? e : '.' + e}`;
+    const e = (ext || R2_FIRST_ACCESS_EXT).replace(/^\.?/, '.');
+    return `${R2_PUBLIC_BASE_URL}/${prefix}${encodeURIComponent(imageKey)}${e}`;
+}
+function buildImageUrls(imageKey) {
+    const primary = buildImageUrl(imageKey);
+    if (!primary) return [null, null];
+    return [primary, buildImageUrl(imageKey + ' OS размер'), buildImageUrl(imageKey + ' One Size'), buildImageUrl(imageKey, '.jpg')];
 }
 
 // GET /api/first-access/supreme/me
@@ -483,14 +488,14 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
                 sizeList.push({ size: s.size, status, available, reserved_until });
             }
 
-            const imageUrl = buildImageUrl(prod.image_key);
+            const urls = buildImageUrls(prod.image_key);
             catalog.push({
                 product_id: prod.product_id,
                 article: prod.article,
                 title: prod.title,
                 price_rrc: prod.price_rrc,
-                image_url: imageUrl,
-                image_url_jpg: imageUrl ? buildImageUrl(prod.image_key, '.jpg') : null,
+                image_url: urls[0],
+                image_url_fallbacks: urls.slice(1).filter(Boolean),
                 sizes: sizeList
             });
         }

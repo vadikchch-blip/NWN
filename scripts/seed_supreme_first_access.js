@@ -184,20 +184,27 @@ async function main() {
     }
 
     // Group by title (one product per title)
-    // image_key: для OS (без размера) = title; для S/M/L/XL = raw_product_str (полная строка "Товар")
-    const productMap = new Map(); // title -> { title, article, price_rrc, image_key, sizes: [...] }
+    // image_key: если есть размеры S/M/L/XL — raw_product_str (фото в R2 с размером в имени)
+    // если только OS — title
+    const productMap = new Map(); // title -> { title, article, price_rrc, image_key, sizedRaw, sizes: [] }
     for (const e of aggregated.values()) {
         if (!productMap.has(e.title)) {
-            const imageKey = e.size === 'OS' ? e.title : e.raw_product_str;
             productMap.set(e.title, {
                 title: e.title,
                 article: e.article,
                 price_rrc: e.price_rrc,
-                image_key: imageKey,
+                image_key: e.title,
+                sizedRaw: null,
                 sizes: []
             });
         }
-        productMap.get(e.title).sizes.push({ size: e.size, qty_total: e.qty_total });
+        const p = productMap.get(e.title);
+        p.sizes.push({ size: e.size, qty_total: e.qty_total });
+        if (e.size !== 'OS' && !p.sizedRaw) p.sizedRaw = e.raw_product_str;
+    }
+    for (const p of productMap.values()) {
+        if (p.sizedRaw) p.image_key = p.sizedRaw;
+        delete p.sizedRaw;
     }
 
     const products = Array.from(productMap.values());
