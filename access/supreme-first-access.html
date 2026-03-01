@@ -20,6 +20,11 @@
         .chip-reserved, .chip-unavailable { background: #EBEBEB; color: #888; cursor: not-allowed; }
         .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 20px; background: #1A1A1A; color: #fff; border-radius: 8px; font-size: 14px; z-index: 100; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .productImageWrap { overflow: hidden; border-radius: 10px 10px 0 0; background: #F5F5F5; display: flex; align-items: center; justify-content: center; padding: 12px; }
+        .productImageWrap[data-lightbox-src] { cursor: pointer; }
+        .productImageWrap .productImage { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; object-position: center; }
+        .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; cursor: pointer; }
+        .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; object-position: center; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -72,6 +77,8 @@
     </main>
 
     <div id="toast" class="toast hidden"></div>
+
+    <div id="lightbox" class="lightbox hidden" onclick="closeLightbox(event)"><img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()"></div>
 
     <script>
 (function() {
@@ -147,8 +154,11 @@
                 }).join(' ');
                 const fallbacks = (p.image_url_fallbacks || []).filter(Boolean);
                 const fb = fallbacks.length ? ` data-fb="${fallbacks.join('|')}"` : '';
-                const img = p.image_url ? `<img src="${p.image_url}"${fb} alt="" class="w-full aspect-[3/4] object-cover rounded-t-lg" onerror="var s=this.dataset.fb;if(s){var a=s.split('|');if(a.length){this.src=a[0];this.dataset.fb=a.slice(1).join('|')}}}">` : '<div class="w-full aspect-[3/4] bg-[#F5F5F5] rounded-t-lg flex items-center justify-center text-[#999] text-sm">нет фото</div>';
-                return `<div class="card-standard overflow-hidden"><a href="#" class="block" onclick="return false;">${img}</a><div class="p-4"><div class="font-medium mb-1">${escapeHtml(p.title)}</div><div class="text-[13px] text-[#888] mb-2">${escapeHtml(p.article)} · ${formatPrice(p.price_rrc)}</div><div class="flex flex-wrap gap-2">${sizesHtml}</div></div></div>`;
+                const imgSrc = p.image_url || '';
+                const imgEl = imgSrc ? `<img src="${imgSrc}"${fb} alt="" class="productImage" onerror="var s=this.dataset.fb;if(s){var a=s.split('|');if(a.length){this.src=a[0];this.dataset.fb=a.slice(1).join('|')}}}">` : '<div class="w-full h-full flex items-center justify-center text-[#999] text-sm">нет фото</div>';
+                const lb = imgSrc ? ` data-lightbox-src="${imgSrc.replace(/"/g, '&quot;')}"` : '';
+                const imgBlock = `<div class="productImageWrap aspect-[3/4]"${lb}>${imgEl}</div>`;
+                return `<div class="card-standard overflow-hidden">${imgBlock}<div class="p-4"><div class="font-medium mb-1">${escapeHtml(p.title)}</div><div class="text-[13px] text-[#888] mb-2">${escapeHtml(p.article)} · ${formatPrice(p.price_rrc)}</div><div class="flex flex-wrap gap-2">${sizesHtml}</div></div></div>`;
             }).join('');
         });
     }
@@ -206,6 +216,17 @@
         d.textContent = s;
         return d.innerHTML;
     }
+
+    window.openLightbox = function(src) { if (!src) return; document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
+    window.closeLightbox = function(e) { if (e && e.target !== e.currentTarget) return; document.getElementById('lightbox').classList.add('hidden'); document.body.style.overflow = ''; };
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox({ target: document.getElementById('lightbox'), currentTarget: document.getElementById('lightbox') }); });
+    document.getElementById('catalog').addEventListener('click', function(e) {
+        const wrap = e.target.closest('.productImageWrap[data-lightbox-src]');
+        if (wrap) {
+            const img = wrap.querySelector('img');
+            openLightbox(img && img.src ? img.src : wrap.dataset.lightboxSrc);
+        }
+    });
 
     if (!token) {
         showDenied('Ссылка недействительна.');
