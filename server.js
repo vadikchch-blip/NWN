@@ -411,7 +411,7 @@ async function validateInviteToken(token) {
 
 function normalizeImageKeyForR2(key) {
     if (!key || typeof key !== 'string') return key;
-    return key.replace(/\sL\/S\s/g, ' L:S ').replace(/\sS\/S\s/g, ' S:S ');
+    return key.replace(/\sL\/S\s/g, ' L:S ').replace(/\sS\/S\s/g, ' S:S ').replace(/[×х]/g, 'x');
 }
 function buildImageUrl(imageKey, ext) {
     if (!imageKey || typeof imageKey !== 'string') return null;
