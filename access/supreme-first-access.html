@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1A1A1A">
+    <title>NWN — Supreme First Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: "Inter", Arial, sans-serif; background: #FFFFFF; color: #000000; -webkit-font-smoothing: antialiased; }
+        .nwn-logo { font-family: "Playfair Display", serif; font-weight: 600; letter-spacing: -0.02em; }
+        .card-standard { background: #FFFFFF; border: 1px solid #EBEBEB; border-radius: 10px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); transition: box-shadow 0.25s ease, border-color 0.25s ease; }
+        .card-standard:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.07); border-color: #DDD; }
+        .chip-available { background: #1A1A1A; color: #fff; cursor: pointer; transition: opacity 0.2s; }
+        .chip-available:hover { opacity: 0.9; }
+        .chip-reserved, .chip-unavailable { background: #EBEBEB; color: #888; cursor: not-allowed; }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 20px; background: #1A1A1A; color: #fff; border-radius: 8px; font-size: 14px; z-index: 100; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="flex items-center justify-between px-8 md:px-12 lg:px-16 py-6 border-b border-[#EBEBEB]">
+        <div class="flex items-center gap-2">
+            <span class="nwn-logo text-xl">nwn</span>
+            <span class="text-[#BCBCBC] text-lg font-light mx-1">(</span>
+            <span class="text-[#BCBCBC] text-lg font-light">—</span>
+            <span class="text-[#BCBCBC] text-lg font-light mx-1">)</span>
+            <span class="text-lg font-light tracking-wide">supreme first access</span>
+        </div>
+    </header>
+
+    <main class="px-8 md:px-12 lg:px-16 py-6 md:py-8 max-w-[1400px]">
+
+        <!-- Access denied stub -->
+        <div id="access-denied" class="hidden text-center py-20">
+            <div class="max-w-md mx-auto">
+                <h2 class="text-xl font-medium mb-3">Доступ недоступен</h2>
+                <p id="access-denied-msg" class="text-[#888] text-sm mb-6">Ссылка недействительна или срок доступа истёк.</p>
+                <a href="/methodology.html" class="text-[13px] text-[#1a1a1a] underline">На главную</a>
+            </div>
+        </div>
+
+        <!-- Content (shown when token valid) -->
+        <div id="content" class="hidden">
+
+            <!-- Top block -->
+            <div class="mb-8 md:mb-10">
+                <div class="text-xs text-[#AAAAAA] font-medium tracking-wide mb-2">First Access active</div>
+                <p class="text-[15px] text-[#333] mb-1">Персональный доступ для: <strong id="user-name"></strong></p>
+                <p class="text-[14px] text-[#888] mb-1">Активен до: <span id="access-ends"></span></p>
+                <p class="text-[13px] text-[#888]">Вы можете зарезервировать до <strong id="max-reservations">2</strong> позиций.</p>
+            </div>
+
+            <!-- My reservations -->
+            <div id="my-reservations-block" class="mb-10">
+                <h3 class="text-lg font-medium mb-4">Мои резервы</h3>
+                <div id="my-reservations-list" class="space-y-3"></div>
+                <p id="reservations-hint" class="text-[13px] text-[#888] mt-3">В магазине мы подготовим позиции к примерке.</p>
+            </div>
+
+            <!-- Catalog -->
+            <h3 class="text-lg font-medium mb-4">Каталог</h3>
+            <div id="catalog" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script>
+(function() {
+    const POLL_INTERVAL = 2500;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    function api(path, opts = {}) {
+        const url = '/api/first-access/supreme' + path + (path.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token || '');
+        return fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', ...(opts?.headers || {}) } });
+    }
+
+    function showDenied(msg) {
+        document.getElementById('access-denied').classList.remove('hidden');
+        document.getElementById('access-denied-msg').textContent = msg || 'Ссылка недействительна или срок доступа истёк.';
+    }
+
+    function showToast(text) {
+        const el = document.getElementById('toast');
+        el.textContent = text;
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 3500);
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatPrice(n) {
+        return new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
+    }
+
+    let pollTimer;
+    function startPolling() {
+        if (pollTimer) clearInterval(pollTimer);
+        loadCatalog();
+        loadReservations();
+        pollTimer = setInterval(() => { loadCatalog(); loadReservations(); }, POLL_INTERVAL);
+    }
+
+    function loadMe() {
+        return api('/me').then(r => {
+            if (r.status === 403 || r.status === 410) {
+                return r.json().then(d => { showDenied(d.error || 'Доступ недоступен'); return null; });
+            }
+            if (!r.ok) { showDenied('Ошибка загрузки'); return null; }
+            return r.json();
+        });
+    }
+
+    function loadCatalog() {
+        if (!token) return;
+        api('/catalog').then(r => {
+            if (!r.ok) return;
+            return r.json();
+        }).then(data => {
+            if (!data) return;
+            const wrap = document.getElementById('catalog');
+            wrap.innerHTML = data.map(p => {
+                const sizesHtml = p.sizes.map(s => {
+                    let cls = 'chip-unavailable', label = 'недоступно', click = '';
+                    if (s.status === 'available') {
+                        cls = 'chip-available';
+                        label = 'Забронировать';
+                        click = `onclick="reserve('${p.product_id}','${s.size}')"`;
+                    } else if (s.status === 'reserved') {
+                        cls = 'chip-reserved';
+                        label = s.reserved_until ? 'зарезервировано до ' + formatDate(s.reserved_until) : 'зарезервировано';
+                    }
+                    return `<span class="inline-block px-3 py-1.5 rounded text-xs font-medium ${cls}" ${click}>${s.size}: ${label}</span>`;
+                }).join(' ');
+                const img = p.image_url ? `<img src="${p.image_url}" alt="" class="w-full aspect-[3/4] object-cover rounded-t-lg">` : '<div class="w-full aspect-[3/4] bg-[#F5F5F5] rounded-t-lg flex items-center justify-center text-[#999] text-sm">нет фото</div>';
+                return `<div class="card-standard overflow-hidden"><a href="#" class="block" onclick="return false;">${img}</a><div class="p-4"><div class="font-medium mb-1">${escapeHtml(p.title)}</div><div class="text-[13px] text-[#888] mb-2">${escapeHtml(p.article)} · ${formatPrice(p.price_rrc)}</div><div class="flex flex-wrap gap-2">${sizesHtml}</div></div></div>`;
+            }).join('');
+        });
+    }
+
+    function loadReservations() {
+        if (!token) return;
+        api('/reservations').then(r => r.ok ? r.json() : []).then(rows => {
+            const list = document.getElementById('my-reservations-list');
+            if (!rows.length) {
+                list.innerHTML = '<p class="text-[#888] text-sm">Нет активных резервов.</p>';
+                return;
+            }
+            list.innerHTML = rows.map(r => `
+                <div class="flex items-center justify-between p-3 bg-[#F9F9F9] rounded-lg border border-[#EBEBEB]">
+                    <div>
+                        <span class="font-medium">${escapeHtml(r.title)}</span>
+                        <span class="text-[#888] text-sm ml-2">${r.size} · ${formatPrice(r.price_rrc)}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[13px] text-[#666]">до ${formatDate(r.expires_at)}</span>
+                        <button type="button" onclick="cancelReserve('${r.id}')" class="text-[13px] text-[#888] underline hover:text-black">Отменить</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    window.reserve = function(productId, size) {
+        api('/reserve', { method: 'POST', body: JSON.stringify({ product_id: productId, size }) })
+            .then(r => r.json())
+            .then(d => {
+                if (d.error) { showToast(d.error); return; }
+                showToast('Зарезервировано до ' + formatDate(d.reservation.expires_at));
+                loadCatalog();
+                loadReservations();
+            })
+            .catch(() => showToast('Ошибка резервирования'));
+    };
+
+    window.cancelReserve = function(reservationId) {
+        api('/cancel', { method: 'POST', body: JSON.stringify({ reservation_id: reservationId }) })
+            .then(r => r.json())
+            .then(d => {
+                if (d.error) { showToast(d.error); return; }
+                showToast('Резерв отменён');
+                loadCatalog();
+                loadReservations();
+            })
+            .catch(() => showToast('Ошибка отмены'));
+    };
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    if (!token) {
+        showDenied('Ссылка недействительна.');
+    } else {
+        loadMe().then(me => {
+            if (!me) return;
+            document.getElementById('content').classList.remove('hidden');
+            document.getElementById('user-name').textContent = me.full_name;
+            document.getElementById('access-ends').textContent = formatDate(me.access_ends_at);
+            document.getElementById('max-reservations').textContent = me.max_allowed;
+            startPolling();
+        });
+    }
+})();
+    </script>
+</body>
+</html>
