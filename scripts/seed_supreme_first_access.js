@@ -15,11 +15,14 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
+const http = require('http');
 const { Pool } = require('pg');
 const XLSX = require('xlsx');
 
 const doForce = process.argv.includes('--force');
 const args = process.argv.slice(2).filter(a => a !== '--force');
+const xlsxUrl = process.env.SUPREME_XLSX_URL;
 const xlsxPath = args[0] || process.env.SUPREME_XLSX_PATH || path.join(__dirname, '..', 'data', 'ррц Supreme.xlsx');
 const overridesPath = process.env.IMAGE_KEY_OVERRIDES || path.join(__dirname, '..', 'data', 'image_key_overrides.json');
 
@@ -77,25 +80,47 @@ function parseQty(val) {
     return parseInt(s, 10) || 0;
 }
 
+function fetchBuffer(url) {
+    return new Promise((resolve, reject) => {
+        const client = url.startsWith('https') ? https : http;
+        client.get(url, (res) => {
+            const chunks = [];
+            res.on('data', c => chunks.push(c));
+            res.on('end', () => resolve(Buffer.concat(chunks)));
+        }).on('error', reject);
+    });
+}
+
 async function main() {
-    if (!fs.existsSync(xlsxPath)) {
-        console.warn('Supreme xlsx not found:', xlsxPath, '- skip seed');
+    let workbook;
+    if (xlsxUrl) {
+        try {
+            const buf = await fetchBuffer(xlsxUrl);
+            workbook = XLSX.read(buf, { type: 'buffer' });
+            console.log('Loaded xlsx from URL');
+        } catch (e) {
+            console.error('Failed to fetch xlsx:', e.message);
+            process.exit(1);
+        }
+    } else if (fs.existsSync(xlsxPath)) {
+        workbook = XLSX.readFile(xlsxPath);
+    } else {
+        console.warn('Supreme xlsx not found (no URL, no file) - skip seed');
         process.exit(0);
     }
 
-    const workbook = XLSX.readFile(xlsxPath);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
     let headerRow = -1;
     let colProduct = -1, colPrice = -1, colQty = -1;
-    for (let i = 0; i < Math.min(data.length, 30); i++) {
+    for (let i = 0; i < Math.min(data.length, 50); i++) {
         const row = data[i] || [];
         for (let j = 0; j < row.length; j++) {
             const val = String(row[j] || '').trim();
-            if (val === 'Товар') colProduct = j;
-            if (val === 'Цена розничная') colPrice = j;
-            if (val === 'Количество') colQty = j;
+            if (val === 'Товар' || val.toLowerCase().includes('товар')) colProduct = j;
+            if (val === 'Цена розничная' || (val.includes('Цена') && val.includes('розничн'))) colPrice = j;
+            if (val === 'Количество' || val.toLowerCase().includes('количество')) colQty = j;
         }
         if (colProduct >= 0 && colPrice >= 0) {
             headerRow = i;

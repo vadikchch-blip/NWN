@@ -143,6 +143,9 @@ async function authMiddleware(req, res, next) {
 // Apply auth middleware BEFORE static files
 app.use(authMiddleware);
 
+// Favicon fallback
+app.get('/favicon.ico', (req, res) => res.redirect(301, '/icon-192.png'));
+
 // ── First Access page (token-based, no JWT) ──
 app.get('/access/supreme-first-access', (req, res) => {
     const htmlPath = path.join(__dirname, 'access', 'supreme-first-access.html');
