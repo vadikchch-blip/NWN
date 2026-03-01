@@ -409,11 +409,16 @@ async function validateInviteToken(token) {
     return { ok: true, invite: inv };
 }
 
+function normalizeImageKeyForR2(key) {
+    if (!key || typeof key !== 'string') return key;
+    return key.replace(/\sL\/S\s/g, ' L:S ').replace(/\sS\/S\s/g, ' S:S ');
+}
 function buildImageUrl(imageKey, ext) {
     if (!imageKey || typeof imageKey !== 'string') return null;
+    const key = normalizeImageKeyForR2(imageKey);
     const prefix = R2_FIRST_ACCESS_PATH ? `${R2_FIRST_ACCESS_PATH}/` : '';
     const e = (ext || R2_FIRST_ACCESS_EXT).replace(/^\.?/, '.');
-    return `${R2_PUBLIC_BASE_URL}/${prefix}${encodeURIComponent(imageKey)}${e}`;
+    return `${R2_PUBLIC_BASE_URL}/${prefix}${encodeURIComponent(key)}${e}`;
 }
 function buildImageUrls(imageKey) {
     const primary = buildImageUrl(imageKey);
