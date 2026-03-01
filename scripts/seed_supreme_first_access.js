@@ -25,8 +25,7 @@ const args = process.argv.slice(2).filter(a => a !== '--force');
 const xlsxUrl = process.env.SUPREME_XLSX_URL;
 const rootDir = path.join(__dirname, '..');
 const defaultPaths = [
-    path.join(rootDir, 'ррц Supreme.xlsx'),      // корень репо
-    path.join(rootDir, 'data', 'ррц Supreme.xlsx')
+    path.join(rootDir, 'ррц Supreme.xlsx')       // корень репо (основной источник)
 ];
 const xlsxPath = args[0] || process.env.SUPREME_XLSX_PATH;
 const overridesPath = process.env.IMAGE_KEY_OVERRIDES || path.join(__dirname, '..', 'data', 'image_key_overrides.json');

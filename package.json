@@ -4,7 +4,7 @@
   "description": "Backend server for secure audio streaming from Cloudflare R2",
   "main": "server.js",
   "scripts": {
-    "start": "node scripts/seed_supreme_first_access.js; node server.js",
+    "start": "node server.js",
     "dev": "node server.js",
     "seed:supreme": "node scripts/seed_supreme_first_access.js"
   },
