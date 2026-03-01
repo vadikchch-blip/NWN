@@ -145,19 +145,22 @@ async function main() {
 
         const key = `${title}|||${size}`;
         if (!aggregated.has(key)) {
-            aggregated.set(key, { title, article, size, price_rrc: priceRrc, qty_total: 0 });
+            aggregated.set(key, { title, article, size, price_rrc: priceRrc, qty_total: 0, raw_product_str: productStr });
         }
         aggregated.get(key).qty_total += qty;
     }
 
     // Group by title (one product per title)
-    const productMap = new Map(); // title -> { title, article, price_rrc, sizes: [{ size, qty_total }] }
+    // image_key: для OS (без размера) = title; для S/M/L/XL = raw_product_str (полная строка "Товар")
+    const productMap = new Map(); // title -> { title, article, price_rrc, image_key, sizes: [...] }
     for (const e of aggregated.values()) {
         if (!productMap.has(e.title)) {
+            const imageKey = e.size === 'OS' ? e.title : e.raw_product_str;
             productMap.set(e.title, {
                 title: e.title,
                 article: e.article,
                 price_rrc: e.price_rrc,
+                image_key: imageKey,
                 sizes: []
             });
         }
@@ -187,7 +190,7 @@ async function main() {
         }
 
         for (const prod of products) {
-            const imageKey = (overrides[prod.title] || prod.title).trim();
+            const imageKey = (overrides[prod.title] || prod.image_key || prod.title).trim();
             const existing = await client.query(
                 'SELECT id FROM first_access_products WHERE title = $1',
                 [prod.title]

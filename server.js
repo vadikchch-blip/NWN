@@ -79,7 +79,9 @@ const PUBLIC_PAGES = ['/login.html', '/register.html', '/install.html', '/manife
 // First Access config
 const MAX_ACTIVE_RESERVATIONS_PER_INVITE = parseInt(process.env.MAX_ACTIVE_RESERVATIONS_PER_INVITE) || 2;
 const RESERVATION_TTL_HOURS = parseInt(process.env.RESERVATION_TTL_HOURS) || 24;
-const R2_PUBLIC_BASE_URL = process.env.R2_PUBLIC_BASE_URL || '';
+const R2_PUBLIC_BASE_URL = (process.env.R2_PUBLIC_BASE_URL || 'https://pub-fa833a523d7b4426930443e4050356ce.r2.dev').replace(/\/$/, '');
+const R2_FIRST_ACCESS_PATH = process.env.R2_FIRST_ACCESS_PATH || 'Supreme';
+const R2_FIRST_ACCESS_EXT = (process.env.R2_FIRST_ACCESS_EXT || '.webp').replace(/^\.?/, '.'); // ensure leading dot
 
 // ── Auth middleware for protected pages ──
 async function authMiddleware(req, res, next) {
@@ -404,10 +406,11 @@ async function validateInviteToken(token) {
     return { ok: true, invite: inv };
 }
 
-function buildImageUrl(imageKey) {
-    if (!R2_PUBLIC_BASE_URL) return null;
-    const key = encodeURIComponent(imageKey);
-    return `${R2_PUBLIC_BASE_URL}/${key}.jpg`;
+function buildImageUrl(imageKey, ext) {
+    if (!imageKey || typeof imageKey !== 'string') return null;
+    const prefix = R2_FIRST_ACCESS_PATH ? `${R2_FIRST_ACCESS_PATH}/` : '';
+    const e = ext || R2_FIRST_ACCESS_EXT;
+    return `${R2_PUBLIC_BASE_URL}/${prefix}${encodeURIComponent(imageKey)}${e.startsWith('.') ? e : '.' + e}`;
 }
 
 // GET /api/first-access/supreme/me
@@ -477,12 +480,14 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
                 sizeList.push({ size: s.size, status, available, reserved_until });
             }
 
+            const imageUrl = buildImageUrl(prod.image_key);
             catalog.push({
                 product_id: prod.product_id,
                 article: prod.article,
                 title: prod.title,
                 price_rrc: prod.price_rrc,
-                image_url: buildImageUrl(prod.image_key),
+                image_url: imageUrl,
+                image_url_jpg: imageUrl ? buildImageUrl(prod.image_key, '.jpg') : null,
                 sizes: sizeList
             });
         }
