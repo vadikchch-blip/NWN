@@ -474,7 +474,14 @@ function buildImageUrl(imageKey, ext) {
 function buildImageUrls(imageKey) {
     const primary = buildImageUrl(imageKey);
     if (!primary) return [null, null];
-    return [primary, buildImageUrl(imageKey + ' OS размер'), buildImageUrl(imageKey + ' One Size'), buildImageUrl(imageKey, '.jpg')];
+    return [
+        primary,
+        buildImageUrl(imageKey, '.jpeg'),
+        buildImageUrl(imageKey, '.jpg'),
+        buildImageUrl(imageKey + ' OS размер'),
+        buildImageUrl(imageKey + ' One Size'),
+        buildImageUrl(imageKey + ' OS размер', '.jpeg')
+    ];
 }
 
 // GET /api/first-access/supreme/me
