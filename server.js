@@ -83,6 +83,26 @@ const R2_PUBLIC_BASE_URL = (process.env.R2_PUBLIC_BASE_URL || 'https://pub-fa833
 const R2_FIRST_ACCESS_PATH = process.env.R2_FIRST_ACCESS_PATH || 'Supreme';
 const R2_FIRST_ACCESS_EXT = (process.env.R2_FIRST_ACCESS_EXT || '.webp').replace(/^\.?/, '.'); // ensure leading dot
 
+let _imageKeyOverrides = null;
+function getImageKeyOverrides() {
+    if (_imageKeyOverrides !== null) return _imageKeyOverrides;
+    const p = path.join(__dirname, 'data', 'image_key_overrides.json');
+    try {
+        if (fs.existsSync(p)) {
+            const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+            if (typeof data === 'object' && !Array.isArray(data)) {
+                _imageKeyOverrides = {};
+                for (const [k, v] of Object.entries(data)) {
+                    if (!k.startsWith('_') && typeof v === 'string') _imageKeyOverrides[k] = v;
+                }
+                return _imageKeyOverrides;
+            }
+        }
+    } catch (e) {}
+    _imageKeyOverrides = {};
+    return _imageKeyOverrides;
+}
+
 // ── Auth middleware for protected pages ──
 async function authMiddleware(req, res, next) {
     const urlPath = req.path;
@@ -551,7 +571,8 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
                 sizeList.push({ size: s.size, status, available, reserved_until });
             }
 
-            const urls = buildImageUrls(prod.image_key);
+            const imageKey = (getImageKeyOverrides()[prod.title] || prod.image_key || prod.title || '').trim();
+            const urls = buildImageUrls(imageKey);
             catalog.push({
                 product_id: prod.product_id,
                 article: prod.article,
