@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nwn-v1';
+const CACHE_NAME = 'nwn-v2';
 const PRECACHE = [
   '/methodology.html',
   '/index.html',

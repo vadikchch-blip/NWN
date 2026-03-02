@@ -147,10 +147,14 @@ app.use(authMiddleware);
 app.get('/favicon.ico', (req, res) => res.redirect(301, '/icon-192.png'));
 
 // ── First Access page (token-based, no JWT) ──
+function sendFirstAccessHtml(res, htmlPath) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.sendFile(htmlPath);
+}
 app.get('/access/supreme-first-access', (req, res) => {
     const htmlPath = path.join(__dirname, 'access', 'supreme-first-access.html');
     if (fs.existsSync(htmlPath)) {
-        res.sendFile(htmlPath);
+        sendFirstAccessHtml(res, htmlPath);
     } else {
         res.status(404).send('Page not found');
     }
@@ -158,7 +162,7 @@ app.get('/access/supreme-first-access', (req, res) => {
 app.get('/access/supreme', (req, res) => {
     const htmlPath = path.join(__dirname, 'access', 'supreme-first-access.html');
     if (fs.existsSync(htmlPath)) {
-        res.sendFile(htmlPath);
+        sendFirstAccessHtml(res, htmlPath);
     } else {
         res.status(404).send('Page not found');
     }
