@@ -591,7 +591,9 @@ app.post('/api/first-access/supreme/reserve', async (req, res) => {
             return res.status(409).json({ error: 'Размер уже зарезервирован' });
         }
 
-        const expiresAt = new Date(Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000);
+        const fixedExpiresEnv = process.env.RESERVATION_FIXED_EXPIRES_AT;
+let expiresAt = fixedExpiresEnv ? new Date(fixedExpiresEnv) : new Date(Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000);
+if (Number.isNaN(expiresAt.getTime())) expiresAt = new Date(Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000);
         const ins = await client.query(
             `INSERT INTO first_access_reservations (invite_id, product_id, size, qty, status, reserved_at, expires_at)
              VALUES ($1, $2, $3, 1, 'active', now(), $4)

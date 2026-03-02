@@ -240,7 +240,7 @@ async function main() {
             if (existing.rows.length > 0 && !doForce) {
                 productId = existing.rows[0].id;
                 await client.query(
-                    'UPDATE first_access_products SET price_rrc = $1, image_key = $2, article = $3, updated_at = now() WHERE id = $4',
+                    'UPDATE first_access_products SET price_rrc = $1, image_key = $2, article = $3, is_active = true, updated_at = now() WHERE id = $4',
                     [prod.price_rrc, imageKey, prod.article || prod.title, productId]
                 );
                 productsUpdated++;
@@ -269,6 +269,19 @@ async function main() {
                 );
                 sizesCreated++;
             }
+        }
+
+        // Отключить товары Supreme, которых нет в текущем xlsx (удалённые позиции)
+        const currentTitles = products.map(p => p.title);
+        const deact = await client.query(
+            `UPDATE first_access_products SET is_active = false, updated_at = now()
+             WHERE brand = 'Supreme' AND title != ALL($1::text[])
+             RETURNING id`,
+            [currentTitles]
+        );
+        const deactivatedCount = deact.rowCount || 0;
+        if (deactivatedCount > 0) {
+            console.log('  Deactivated (not in xlsx):', deactivatedCount);
         }
 
         await client.query('COMMIT');
