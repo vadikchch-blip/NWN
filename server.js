@@ -491,17 +491,19 @@ function buildImageUrl(imageKey, ext) {
     const e = (ext || R2_FIRST_ACCESS_EXT).replace(/^\.?/, '.');
     return `${R2_PUBLIC_BASE_URL}/${prefix}${encodeURIComponent(key)}${e}`;
 }
+// Ключи, для которых в R2 лежит только .jpeg (сначала отдаём .jpeg, чтобы фото гарантированно загрузилось)
+const IMAGE_KEYS_JPEG_ONLY = [
+    'SUPREME Сумка (FW25B16) Denim Mini Utility Bag White',
+    'SUPREME Сумка (FW25B10) Velvet Mini Pouch Leopard'
+];
 function buildImageUrls(imageKey) {
-    const primary = buildImageUrl(imageKey);
+    const jpegFirst = IMAGE_KEYS_JPEG_ONLY.some(k => k === (imageKey || '').trim());
+    const primary = jpegFirst ? buildImageUrl(imageKey, '.jpeg') : buildImageUrl(imageKey);
     if (!primary) return [null, null];
-    return [
-        primary,
-        buildImageUrl(imageKey, '.jpeg'),
-        buildImageUrl(imageKey, '.jpg'),
-        buildImageUrl(imageKey + ' OS размер'),
-        buildImageUrl(imageKey + ' One Size'),
-        buildImageUrl(imageKey + ' OS размер', '.jpeg')
-    ];
+    const rest = jpegFirst
+        ? [buildImageUrl(imageKey), buildImageUrl(imageKey, '.jpg'), buildImageUrl(imageKey + ' OS размер'), buildImageUrl(imageKey + ' One Size'), buildImageUrl(imageKey + ' OS размер', '.jpeg')]
+        : [buildImageUrl(imageKey, '.jpeg'), buildImageUrl(imageKey, '.jpg'), buildImageUrl(imageKey + ' OS размер'), buildImageUrl(imageKey + ' One Size'), buildImageUrl(imageKey + ' OS размер', '.jpeg')];
+    return [primary, ...rest];
 }
 
 // GET /api/first-access/supreme/me
