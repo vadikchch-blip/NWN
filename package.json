@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node scripts/seed_supreme_first_access.js; node server.js",
     "dev": "node server.js",
-    "seed:supreme": "node scripts/seed_supreme_first_access.js"
+    "seed:supreme": "node scripts/seed_supreme_first_access.js",
+    "seed:invites": "node scripts/seed_first_access_invites.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.600.0",

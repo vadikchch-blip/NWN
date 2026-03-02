@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWN — First Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body{font-family:"Inter",Arial,sans-serif;background:#fff;color:#000;-webkit-font-smoothing:antialiased}
+        .nwn-logo{font-family:"Playfair Display",serif;font-weight:600;letter-spacing:-0.02em}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8B8E93;padding:8px 10px;border-bottom:2px solid #1A1A1A}
+        td{padding:10px;border-bottom:1px solid #F0F0F0;vertical-align:middle}
+        tr:hover td{background:#FAFAFA}
+        .btn-copy{padding:4px 10px;font-size:11px;border:1px solid #E6E6E6;border-radius:6px;background:#fff;cursor:pointer}
+        .btn-copy:hover{background:#F5F5F5;border-color:#1A1A1A}
+        select{border:1px solid #E6E6E6;border-radius:6px;padding:6px 10px;font-size:12px;font-family:inherit;outline:none;cursor:pointer}
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="flex items-center justify-between px-6 md:px-12 py-5 border-b border-[#EBEBEB]">
+        <div class="flex items-center gap-2">
+            <a href="/methodology.html" class="nwn-logo text-xl hover:opacity-70 transition-opacity">nwn</a>
+            <span class="text-[#DDD] mx-2">·</span>
+            <a href="/admin.html" class="text-sm font-light text-[#888] hover:text-black">админ-панель</a>
+            <span class="text-[#DDD] mx-2">·</span>
+            <span class="text-sm font-light text-[#1A1A1A]">First Access</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="text-[12px] text-[#888]" id="admin-name"></span>
+            <button onclick="logout()" class="text-[12px] text-[#888] hover:text-black transition-colors">Выйти</button>
+        </div>
+    </header>
+
+    <main class="max-w-[1200px] mx-auto px-6 md:px-12 py-8">
+
+        <h1 class="text-2xl font-light tracking-tight mb-8">First Access — инвайты и бронирования</h1>
+
+        <section class="mb-12">
+            <h2 class="text-lg font-medium mb-4">Список инвайтов</h2>
+            <p class="text-[13px] text-[#888] mb-4">Ссылки создаются скриптом из файла «Список клиентов.xlsx». Копируйте ссылку и отправьте гостю.</p>
+            <div class="overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr><th>ФИО</th><th>Ссылка</th><th>Активен до</th><th>Статус</th></tr>
+                    </thead>
+                    <tbody id="invites-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-lg font-medium mb-4">Бронирования</h2>
+            <div class="flex items-center gap-2 mb-4">
+                <label class="text-[13px] text-[#888]">Статус:</label>
+                <select id="filter-status" onchange="loadReservations()">
+                    <option value="">Все</option>
+                    <option value="active">Активные</option>
+                    <option value="expired">Истекшие</option>
+                    <option value="cancelled">Отменённые</option>
+                    <option value="purchased">Выкупленные</option>
+                </select>
+            </div>
+            <div class="overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr><th>Гость</th><th>Товар</th><th>Размер</th><th>Статус</th><th>Дата резерва</th></tr>
+                    </thead>
+                    <tbody id="reservations-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+    const TOKEN = localStorage.getItem('nwn_token');
+    if (!TOKEN) window.location.href = '/login.html';
+
+    const hdrs = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN };
+
+    fetch('/api/auth/me', { headers: hdrs }).then(r => r.json()).then(d => {
+        if (!d.user || d.user.role_id !== 1) {
+            alert('Доступ только для администраторов');
+            window.location.href = '/methodology.html';
+            return;
+        }
+        document.getElementById('admin-name').textContent = d.user.display_name || d.user.username;
+        loadInvites();
+        loadReservations();
+    }).catch(() => { window.location.href = '/login.html'; });
+
+    async function loadInvites() {
+        const resp = await fetch('/api/first-access/admin/invites', { headers: hdrs });
+        if (resp.status === 403 || resp.status === 401) { window.location.href = '/login.html'; return; }
+        const list = await resp.json();
+        const tbody = document.getElementById('invites-body');
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-[#888] py-6">Нет инвайтов. Запустите скрипт: node scripts/seed_first_access_invites.js</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(inv => `
+            <tr>
+                <td><strong>${escapeHtml(inv.full_name)}</strong></td>
+                <td>
+                    <span class="font-mono text-[11px] text-[#666] break-all">${escapeHtml(inv.invite_url)}</span>
+                    <button type="button" class="btn-copy ml-2" onclick="copyUrl('${escapeHtmlAttr(inv.invite_url)}', this)">Копировать</button>
+                </td>
+                <td>${formatDate(inv.access_ends_at)}</td>
+                <td>${inv.is_active ? 'Активен' : 'Выкл'}</td>
+            </tr>
+        `).join('');
+    }
+
+    function copyUrl(url, btn) {
+        navigator.clipboard.writeText(url).then(() => {
+            const prev = btn.textContent;
+            btn.textContent = 'Скопировано';
+            setTimeout(() => { btn.textContent = prev; }, 1500);
+        });
+    }
+
+    async function loadReservations() {
+        const status = document.getElementById('filter-status').value;
+        const url = status ? '/api/first-access/admin/reservations?status=' + encodeURIComponent(status) : '/api/first-access/admin/reservations';
+        const resp = await fetch(url, { headers: hdrs });
+        if (resp.status === 403 || resp.status === 401) return;
+        const list = await resp.json();
+        const tbody = document.getElementById('reservations-body');
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-[#888] py-6">Нет бронирований</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(r => `
+            <tr>
+                <td>${escapeHtml(r.guest_name)}</td>
+                <td>${escapeHtml(r.product_title || '')} ${r.product_article ? '(' + escapeHtml(r.product_article) + ')' : ''}</td>
+                <td>${escapeHtml(r.size)}</td>
+                <td>${escapeHtml(r.status)}</td>
+                <td>${formatDate(r.reserved_at)}</td>
+            </tr>
+        `).join('');
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(s) {
+        if (s == null) return '';
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+    function escapeHtmlAttr(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function logout() {
+        localStorage.removeItem('nwn_token');
+        localStorage.removeItem('nwn_user');
+        document.cookie = 'nwn_token=;path=/;max-age=0';
+        window.location.href = '/login.html';
+    }
+    </script>
+
+</body>
+</html>

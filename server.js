@@ -385,6 +385,45 @@ app.put('/api/admin/access', requireAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── First Access Admin (invites list + reservations) ──
+function getBaseUrl(req) {
+    const base = process.env.BASE_URL || process.env.APP_URL;
+    if (base) return base.replace(/\/$/, '');
+    return `${req.protocol}://${req.get('host') || ''}`;
+}
+
+app.get('/api/first-access/admin/invites', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, full_name, token, access_starts_at, access_ends_at, is_active, created_at
+             FROM first_access_invites ORDER BY created_at DESC`
+        );
+        const baseUrl = getBaseUrl(req);
+        const rows = result.rows.map(r => ({
+            ...r,
+            invite_url: `${baseUrl}/access/supreme-first-access.html?token=${encodeURIComponent(r.token)}`
+        }));
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/first-access/admin/reservations', requireAdmin, async (req, res) => {
+    try {
+        const statusFilter = req.query.status;
+        const baseQuery = `
+            SELECT r.id, r.size, r.status, r.reserved_at, r.expires_at,
+                   i.full_name AS guest_name,
+                   p.title AS product_title, p.article AS product_article, p.brand
+            FROM first_access_reservations r
+            JOIN first_access_invites i ON i.id = r.invite_id
+            JOIN first_access_products p ON p.id = r.product_id`;
+        const where = statusFilter ? ' WHERE r.status = $1' : '';
+        const order = ' ORDER BY r.reserved_at DESC';
+        const result = await pool.query(baseQuery + where + order, statusFilter ? [statusFilter] : []);
+        res.json(result.rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ══════════════════════════════════
 // ── FIRST ACCESS (Supreme) API ──
 // ══════════════════════════════════
