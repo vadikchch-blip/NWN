@@ -167,6 +167,14 @@ app.get('/access/supreme', (req, res) => {
         res.status(404).send('Page not found');
     }
 });
+app.get('/access/supreme-first-access.html', (req, res) => {
+    const htmlPath = path.join(__dirname, 'access', 'supreme-first-access.html');
+    if (fs.existsSync(htmlPath)) {
+        sendFirstAccessHtml(res, htmlPath);
+    } else {
+        res.status(404).send('Page not found');
+    }
+});
 
 // Serve static files
 app.use(express.static(path.join(__dirname)));
