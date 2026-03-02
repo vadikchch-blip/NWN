@@ -77,7 +77,7 @@ const FILE_TO_SLUG = {
 const PUBLIC_PAGES = ['/login.html', '/register.html', '/install.html', '/manifest.json', '/sw.js', '/icon-192.png', '/icon-512.png', '/qr-install.svg', '/nwn-logo.png', '/health', '/favicon.ico', '/access/supreme-first-access', '/access/supreme'];
 
 // First Access config
-const MAX_ACTIVE_RESERVATIONS_PER_INVITE = parseInt(process.env.MAX_ACTIVE_RESERVATIONS_PER_INVITE) || 2;
+const MAX_ACTIVE_RESERVATIONS_PER_INVITE = parseInt(process.env.MAX_ACTIVE_RESERVATIONS_PER_INVITE) || 5;
 const RESERVATION_TTL_HOURS = parseInt(process.env.RESERVATION_TTL_HOURS) || 24;
 const R2_PUBLIC_BASE_URL = (process.env.R2_PUBLIC_BASE_URL || 'https://pub-fa833a523d7b4426930443e4050356ce.r2.dev').replace(/\/$/, '');
 const R2_FIRST_ACCESS_PATH = process.env.R2_FIRST_ACCESS_PATH || 'Supreme';
@@ -654,7 +654,7 @@ app.post('/api/first-access/supreme/cancel', async (req, res) => {
         await client.query(
             `UPDATE first_access_product_sizes SET qty_reserved = qty_reserved - 1, updated_at = now()
              WHERE product_id = $1 AND size = $2`,
-            [reserv.product_id, resv.size]
+            [resv.product_id, resv.size]
         );
 
         await client.query('COMMIT');

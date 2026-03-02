@@ -25,8 +25,8 @@ if (!dbUrl) {
 }
 
 if (!fs.existsSync(xlsxPath)) {
-    console.error('File not found:', xlsxPath);
-    process.exit(1);
+    console.warn('Invites seed: file not found:', xlsxPath, '- skipping');
+    process.exit(0);
 }
 
 const pool = new Pool({ connectionString: dbUrl, ssl: { rejectUnauthorized: false } });
@@ -83,22 +83,30 @@ async function main() {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
-    if (data.length < 2) {
-        console.error('Not enough rows (need header + at least one data row)');
+    if (data.length < 1) {
+        console.error('No rows in sheet');
         process.exit(1);
     }
 
     const { colFio, colSurname, colName } = detectColumns(data);
     const hasAny = colFio >= 0 || (colSurname >= 0 && colName >= 0) || colName >= 0;
-    if (!hasAny) {
-        console.error('Could not find columns: need "ФИО", or "Имя", or "Фамилия" + "Имя"');
-        process.exit(1);
-    }
 
     const names = [];
-    for (let i = 1; i < data.length; i++) {
-        const fullName = getFullNameFromRow(data[i], colFio, colSurname, colName);
-        if (fullName) names.push(fullName);
+    if (hasAny) {
+        for (let i = 1; i < data.length; i++) {
+            const fullName = getFullNameFromRow(data[i], colFio, colSurname, colName);
+            if (fullName) names.push(fullName);
+        }
+    } else {
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i] || [];
+            const fullName = String(row[0] || '').trim();
+            if (fullName) names.push(fullName);
+        }
+        if (names.length === 0) {
+            console.error('Could not find columns: need "ФИО", or "Имя", or "Фамилия" + "Имя", or one column with names');
+            process.exit(1);
+        }
     }
 
     console.log('Rows to process:', names.length);
@@ -115,6 +123,12 @@ async function main() {
     try {
         await client.query('BEGIN');
         for (const fullName of names) {
+            const existing = await client.query(
+                `SELECT 1 FROM first_access_invites WHERE full_name = $1 AND access_ends_at > now() LIMIT 1`,
+                [fullName]
+            );
+            if (existing.rows.length > 0) continue;
+
             let token = generateToken();
             let attempts = 0;
             while (attempts < 5) {
