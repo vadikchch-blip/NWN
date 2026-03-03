@@ -138,12 +138,16 @@
                 <td>${escapeHtml(r.guest_name)}</td>
                 <td>${escapeHtml(r.product_title || '')} ${r.product_article ? '(' + escapeHtml(r.product_article) + ')' : ''}</td>
                 <td>${escapeHtml(r.size)}</td>
-                <td>${escapeHtml(r.status)}</td>
+                <td>${formatStatus(r.status)}</td>
                 <td>${formatDate(r.reserved_at)}</td>
             </tr>
         `).join('');
     }
 
+    function formatStatus(s) {
+        const map = { active: 'Активен', expired: 'Истёк', cancelled: 'Отменён', purchased: 'Куплен' };
+        return map[s] || s || '—';
+    }
     function formatDate(iso) {
         if (!iso) return '—';
         return new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
