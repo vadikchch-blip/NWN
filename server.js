@@ -597,7 +597,9 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
             const sizes = await pool.query(
                 `SELECT ps.size, ps.qty_total,
                  COALESCE((SELECT SUM(r.qty)::int FROM first_access_reservations r
-                   WHERE r.product_id = ps.product_id AND r.size = ps.size AND r.status = 'active'), 0) as qty_reserved
+                   WHERE r.product_id = ps.product_id AND r.status = 'active'
+                   AND (TRIM(r.size) = TRIM(ps.size) OR UPPER(TRIM(r.size)) = UPPER(TRIM(ps.size))
+                        OR (r.size IN ('OS','One Size','One size') AND ps.size IN ('OS','One Size','One size')))), 0) as qty_reserved
                  FROM first_access_product_sizes ps
                  WHERE ps.product_id = $1`,
                 [prod.product_id]
@@ -617,7 +619,8 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
                     status = 'reserved';
                     const minExp = await pool.query(
                         `SELECT MIN(expires_at) as m FROM first_access_reservations
-                         WHERE product_id = $1 AND size = $2 AND status = 'active'`,
+                         WHERE product_id = $1 AND status = 'active'
+                         AND (TRIM(size) = TRIM($2) OR (size IN ('OS','One Size') AND $2 IN ('OS','One Size')))`,
                         [prod.product_id, s.size]
                     );
                     reserved_until = minExp.rows[0]?.m || null;
