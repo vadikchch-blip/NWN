@@ -7,7 +7,8 @@
     "start": "node scripts/seed_supreme_first_access.js; node scripts/seed_first_access_invites.js; node server.js",
     "dev": "node server.js",
     "seed:supreme": "node scripts/seed_supreme_first_access.js",
-    "seed:invites": "node scripts/seed_first_access_invites.js"
+    "seed:invites": "node scripts/seed_first_access_invites.js",
+    "fix:hat-prices": "node scripts/fix_hat_prices.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.600.0",

@@ -456,6 +456,24 @@ app.get('/api/first-access/admin/reservations', requireAdmin, async (req, res) =
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// One-off: 2 hats 11990 → 10990 (call once, then remove)
+app.post('/api/first-access/admin/fix-hat-prices', requireAdmin, async (req, res) => {
+    try {
+        const ids = await pool.query(
+            `SELECT id FROM first_access_products
+             WHERE title ILIKE '%шап%' AND price_rrc = 11990
+             ORDER BY title LIMIT 2`
+        );
+        if (ids.rows.length === 0) return res.json({ ok: true, updated: 0, msg: 'No hats with 11990' });
+        const uuids = ids.rows.map(r => r.id);
+        await pool.query(
+            `UPDATE first_access_products SET price_rrc = 10990, updated_at = now() WHERE id = ANY($1::uuid[])`,
+            [uuids]
+        );
+        res.json({ ok: true, updated: uuids.length });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ══════════════════════════════════
 // ── FIRST ACCESS (Supreme) API ──
 // ══════════════════════════════════
