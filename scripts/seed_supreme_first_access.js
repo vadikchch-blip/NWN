@@ -25,7 +25,8 @@ const args = process.argv.slice(2).filter(a => a !== '--force');
 const xlsxUrl = process.env.SUPREME_XLSX_URL;
 const rootDir = path.join(__dirname, '..');
 const defaultPaths = [
-    path.join(rootDir, 'ррц Supreme.xlsx')       // корень репо (основной источник)
+    path.join(rootDir, 'ррц Supreme.xlsx'),           // корень репо
+    path.join(rootDir, 'data', 'ррц Supreme.xlsx')    // data/
 ];
 const xlsxPath = args[0] || process.env.SUPREME_XLSX_PATH;
 const overridesPath = process.env.IMAGE_KEY_OVERRIDES || path.join(__dirname, '..', 'data', 'image_key_overrides.json');
@@ -211,6 +212,10 @@ async function main() {
     const totalSizes = products.reduce((acc, p) => acc + p.sizes.length, 0);
 
     console.log('Parsed:', products.length, 'products,', totalSizes, 'sizes');
+    const hatSample = products.filter(p => /шап/i.test(p.title)).slice(0, 4);
+    if (hatSample.length) {
+        console.log('  Hat sample (from xlsx):', hatSample.map(p => `${p.title.slice(0, 35)}... → ${p.price_rrc}₽`).join('; '));
+    }
     if (skipped.length) {
         console.log('Skipped', skipped.length, 'rows:', skipped.slice(0, 5).map(s => JSON.stringify(s)).join(', '));
         if (skipped.length > 5) console.log('... and', skipped.length - 5, 'more');
@@ -288,7 +293,7 @@ async function main() {
 
         console.log('\nSummary:');
         console.log('  Products created:', productsCreated);
-        console.log('  Products updated:', productsUpdated);
+        console.log('  Products updated:', productsUpdated, productsUpdated > 0 ? '(prices refreshed)' : '');
         console.log('  Sizes created/updated:', sizesCreated);
         console.log('  Total products in catalog:', products.length);
     } catch (err) {
