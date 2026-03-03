@@ -538,7 +538,7 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
             `SELECT p.id as product_id, p.article, p.title, p.price_rrc, p.image_key
              FROM first_access_products p
              WHERE p.is_active = true
-             ORDER BY p.title`
+             ORDER BY (CASE WHEN p.title ILIKE '%кубик%' OR p.title ILIKE '%игральн%' THEN 1 ELSE 0 END), p.title`
         );
 
         const catalog = [];
