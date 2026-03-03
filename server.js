@@ -633,7 +633,7 @@ app.post('/api/first-access/supreme/reserve', async (req, res) => {
             return res.status(409).json({ error: 'Размер уже зарезервирован' });
         }
 
-        const fixedExpiresEnv = process.env.RESERVATION_FIXED_EXPIRES_AT || '2025-03-05T17:00:00.000Z'; // 05.03 20:00 МСК
+        const fixedExpiresEnv = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z'; // 05.03 20:00 МСК
 let expiresAt = fixedExpiresEnv ? new Date(fixedExpiresEnv) : new Date(Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000);
 if (Number.isNaN(expiresAt.getTime())) expiresAt = new Date(Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000);
         const ins = await client.query(
@@ -796,6 +796,32 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', r2Configured: !!s3Client, dbConfigured: !!process.env.DATABASE_URL || !!process.env.DATABASE_PUBLIC_URL });
 });
 
+// ── One-time: restore reservations wrongly expired due to 2025 date bug ──
+function restoreWronglyExpiredReservations() {
+    if (!pool) return;
+    const fixedExpires = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
+    pool.query(
+        `WITH wrong_expired AS (
+            SELECT id, product_id, size, qty FROM first_access_reservations
+            WHERE status = 'expired' AND expires_at >= '2025-03-01' AND expires_at < '2025-03-10'
+        ),
+        restored AS (
+            UPDATE first_access_reservations r SET status = 'active', expires_at = $1::timestamptz, updated_at = now()
+            FROM wrong_expired w WHERE r.id = w.id
+            RETURNING r.product_id, r.size, w.qty
+        ),
+        agg AS (
+            SELECT product_id, size, SUM(qty)::int AS total FROM restored GROUP BY product_id, size
+        )
+        UPDATE first_access_product_sizes ps
+        SET qty_reserved = qty_reserved + agg.total, updated_at = now()
+        FROM agg WHERE ps.product_id = agg.product_id AND ps.size = agg.size`,
+        [fixedExpires]
+    ).then(r => {
+        if (r && r.rowCount > 0) console.log('Restored wrongly-expired reservations (2025 date bug)');
+    }).catch(err => console.error('Restore reservations:', err.message));
+}
+
 // ── Start ──
 app.listen(PORT, () => {
     console.log(`\nNWN Education Server`);
@@ -803,4 +829,5 @@ app.listen(PORT, () => {
     console.log(`R2: ${s3Client ? 'OK' : 'Not configured'}`);
     console.log(`DB: ${pool ? 'Connected' : 'Not configured'}`);
     console.log(`Auth: Enabled\n`);
+    restoreWronglyExpiredReservations();
 });
