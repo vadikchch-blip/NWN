@@ -456,6 +456,44 @@ app.get('/api/first-access/admin/reservations', requireAdmin, async (req, res) =
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// POST /api/first-access/admin/restore-expired — срочно вернуть истёкшие в active
+app.post('/api/first-access/admin/restore-expired', requireAdmin, async (req, res) => {
+    try {
+        const fixedExpires = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
+        const r1 = await pool.query(
+            `WITH to_restore AS (
+                SELECT id, product_id, size, COALESCE(qty, 1) as qty FROM first_access_reservations
+                WHERE status = 'expired' AND expires_at < $1::timestamptz
+            ),
+            restored AS (
+                UPDATE first_access_reservations r SET status = 'active', expires_at = $1::timestamptz, updated_at = now()
+                FROM to_restore w WHERE r.id = w.id
+                RETURNING r.product_id, r.size, w.qty
+            ),
+            agg AS (
+                SELECT product_id, size, SUM(qty)::int AS total FROM restored GROUP BY product_id, size
+            )
+            UPDATE first_access_product_sizes ps SET qty_reserved = qty_reserved + agg.total, updated_at = now()
+            FROM agg WHERE ps.product_id = agg.product_id AND ps.size = agg.size`,
+            [fixedExpires]
+        );
+        await pool.query(
+            `UPDATE first_access_product_sizes ps SET qty_reserved = COALESCE((
+                SELECT SUM(qty)::int FROM first_access_reservations
+                WHERE product_id = ps.product_id AND size = ps.size AND status = 'active'
+            ), 0), updated_at = now()`
+        );
+        const count = await pool.query(
+            'SELECT COUNT(*)::int as c FROM first_access_reservations WHERE status = \'expired\' AND expires_at < $1::timestamptz',
+            [fixedExpires]
+        );
+        res.json({ ok: true, restored: r1.rowCount || 0, stillExpired: count.rows[0]?.c || 0, msg: 'Брони восстановлены' });
+    } catch (err) {
+        console.error('Restore expired:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ══════════════════════════════════
 // ── FIRST ACCESS (Supreme) API ──
 // ══════════════════════════════════
