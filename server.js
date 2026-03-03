@@ -456,6 +456,64 @@ app.get('/api/first-access/admin/reservations', requireAdmin, async (req, res) =
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// POST /api/first-access/admin/mark-reserved — пометить товар как забронированный (для сумки и т.п.)
+const SYSTEM_INVITE_TOKEN = 'sys-reserved-' + (process.env.SYSTEM_INVITE_SECRET || 'nwn-fa');
+app.post('/api/first-access/admin/mark-reserved', requireAdmin, async (req, res) => {
+    try {
+        const { article, title_pattern, size = 'OS' } = req.body || {};
+        let product;
+        if (article && title_pattern) {
+            product = await pool.query(
+                `SELECT id FROM first_access_products WHERE article = $1 AND title ILIKE '%' || $2 || '%' LIMIT 1`,
+                [article, title_pattern]
+            );
+        } else if (article) {
+            product = await pool.query(`SELECT id FROM first_access_products WHERE article = $1 LIMIT 1`, [article]);
+        } else if (title_pattern) {
+            product = await pool.query(`SELECT id FROM first_access_products WHERE title ILIKE '%' || $1 || '%' LIMIT 1`, [title_pattern]);
+        } else {
+            return res.status(400).json({ error: 'Укажите article или title_pattern' });
+        }
+        if (product.rows.length === 0) return res.status(404).json({ error: 'Товар не найден' });
+        const productId = product.rows[0].id;
+
+        let inv = await pool.query('SELECT id FROM first_access_invites WHERE token = $1', [SYSTEM_INVITE_TOKEN]);
+        if (inv.rows.length === 0) {
+            const fixedExpires = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
+            await pool.query(
+                `INSERT INTO first_access_invites (token, full_name, access_starts_at, access_ends_at)
+                 VALUES ($1, $2, now(), $3)`,
+                [SYSTEM_INVITE_TOKEN, 'Резерв (админ)', fixedExpires]
+            );
+            inv = await pool.query('SELECT id FROM first_access_invites WHERE token = $1', [SYSTEM_INVITE_TOKEN]);
+        }
+        const inviteId = inv.rows[0].id;
+
+        const exists = await pool.query(
+            `SELECT 1 FROM first_access_reservations WHERE invite_id = $1 AND product_id = $2 AND size = $3 AND status = 'active'`,
+            [inviteId, productId, size]
+        );
+        if (exists.rows.length > 0) return res.json({ ok: true, msg: 'Уже забронировано' });
+
+        const fixedExpires = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
+        const expiresAt = new Date(fixedExpires);
+        await pool.query(
+            `INSERT INTO first_access_reservations (invite_id, product_id, size, qty, status, reserved_at, expires_at)
+             VALUES ($1, $2, $3, 1, 'active', now(), $4)`,
+            [inviteId, productId, size, expiresAt]
+        );
+        await pool.query(
+            `UPDATE first_access_product_sizes SET qty_reserved = qty_reserved + 1, updated_at = now()
+             WHERE product_id = $1 AND size = $2`,
+            [productId, size]
+        );
+        res.json({ ok: true, msg: 'Помечено как забронировано' });
+    } catch (err) {
+        console.error('Mark reserved:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // POST /api/first-access/admin/restore-expired — срочно вернуть истёкшие в active
 app.post('/api/first-access/admin/restore-expired', requireAdmin, async (req, res) => {
     try {
