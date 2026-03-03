@@ -462,12 +462,18 @@ app.post('/api/first-access/admin/restore-expired', requireAdmin, async (req, re
         const fixedExpires = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
         const r1 = await pool.query(
             `WITH to_restore AS (
-                SELECT id, product_id, size, COALESCE(qty, 1) as qty FROM first_access_reservations
-                WHERE status = 'expired' AND expires_at < $1::timestamptz
+                SELECT r.id, r.invite_id, r.product_id, r.size, COALESCE(r.qty, 1) as qty
+                FROM first_access_reservations r
+                WHERE r.status = 'expired' AND r.expires_at < $1::timestamptz
+                AND NOT EXISTS (
+                    SELECT 1 FROM first_access_reservations r2
+                    WHERE r2.invite_id = r.invite_id AND r2.product_id = r.product_id AND r2.size = r.size
+                    AND r2.status = 'active' AND r2.id != r.id
+                )
             ),
             restored AS (
                 UPDATE first_access_reservations r SET status = 'active', expires_at = $1::timestamptz, updated_at = now()
-                FROM to_restore w WHERE r.id = w.id
+                FROM (SELECT id, product_id, size, qty FROM to_restore) w WHERE r.id = w.id
                 RETURNING r.product_id, r.size, w.qty
             ),
             agg AS (
@@ -815,11 +821,17 @@ const FIXED_EXPIRES = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17
 
 function runReservationCron() {
     if (!pool) return;
-    // 1) Restore: expired с expires_at в прошлом → active с правильной датой (все подряд, не только 14 дней)
+    // 1) Restore: expired с expires_at в прошлом → active (только если нет дубликата active для invite+product+size)
     pool.query(
         `WITH to_restore AS (
-            SELECT id, product_id, size, COALESCE(qty, 1) as qty FROM first_access_reservations
-            WHERE status = 'expired' AND expires_at < $1::timestamptz
+            SELECT r.id, r.product_id, r.size, COALESCE(r.qty, 1) as qty
+            FROM first_access_reservations r
+            WHERE r.status = 'expired' AND r.expires_at < $1::timestamptz
+            AND NOT EXISTS (
+                SELECT 1 FROM first_access_reservations r2
+                WHERE r2.invite_id = r.invite_id AND r2.product_id = r.product_id AND r2.size = r.size
+                AND r2.status = 'active' AND r2.id != r.id
+            )
         ),
         restored AS (
             UPDATE first_access_reservations r SET status = 'active', expires_at = $1::timestamptz, updated_at = now()
