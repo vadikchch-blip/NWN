@@ -533,6 +533,8 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
     const v = await validateInviteToken(token);
     if (!v.ok) return res.status(v.status).json({ error: v.error });
 
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
     try {
         const products = await pool.query(
             `SELECT p.id as product_id, p.article, p.title, p.price_rrc, p.image_key
@@ -544,7 +546,9 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
         const catalog = [];
         for (const prod of products.rows) {
             const sizes = await pool.query(
-                `SELECT ps.size, ps.qty_total, ps.qty_reserved
+                `SELECT ps.size, ps.qty_total,
+                 COALESCE((SELECT SUM(r.qty)::int FROM first_access_reservations r
+                   WHERE r.product_id = ps.product_id AND r.size = ps.size AND r.status = 'active'), 0) as qty_reserved
                  FROM first_access_product_sizes ps
                  WHERE ps.product_id = $1`,
                 [prod.product_id]
@@ -768,51 +772,16 @@ app.get('/api/first-access/supreme/reservations', async (req, res) => {
     res.json(rows.rows);
 });
 
-// ── Cron: expire reservations ──
-function runExpireReservations() {
-    pool.query(
-        `WITH expired AS (
-            SELECT id, product_id, size, qty FROM first_access_reservations
-            WHERE status = 'active' AND expires_at < now()
-        ),
-        marked AS (
-            UPDATE first_access_reservations SET status = 'expired', updated_at = now()
-            WHERE id IN (SELECT id FROM expired)
-            RETURNING product_id, size, qty
-        ),
-        agg AS (
-            SELECT product_id, size, SUM(qty)::int AS total FROM marked GROUP BY product_id, size
-        )
-        UPDATE first_access_product_sizes ps
-        SET qty_reserved = GREATEST(0, ps.qty_reserved - agg.total), updated_at = now()
-        FROM agg
-        WHERE ps.product_id = agg.product_id AND ps.size = agg.size`
-    ).then(() => {}).catch(err => console.error('Expire reservations error:', err.message));
-}
-cron.schedule('* * * * *', runExpireReservations);
+// ── Cron: restore wrong-expired, sync qty_reserved, then expire ──
+const FIXED_EXPIRES = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
 
-// ── Health check ──
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', r2Configured: !!s3Client, dbConfigured: !!process.env.DATABASE_URL || !!process.env.DATABASE_PUBLIC_URL });
-});
-
-// ── Restore expired + sync qty_reserved (run every startup) ──
-function restoreAndSyncReservations() {
+function runReservationCron() {
     if (!pool) return;
-    const fixedExpires = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
-
-    const runSync = () => pool.query(
-        `UPDATE first_access_product_sizes ps
-         SET qty_reserved = COALESCE((
-           SELECT SUM(qty)::int FROM first_access_reservations
-           WHERE product_id = ps.product_id AND size = ps.size AND status = 'active'
-         ), 0), updated_at = now()`
-    ).then(() => {}).catch(err => console.error('Sync qty_reserved:', err.message));
-
+    // 1) Restore: expired с expires_at в прошлом → active с правильной датой (все подряд, не только 14 дней)
     pool.query(
         `WITH to_restore AS (
             SELECT id, product_id, size, COALESCE(qty, 1) as qty FROM first_access_reservations
-            WHERE status = 'expired' AND reserved_at >= now() - interval '14 days'
+            WHERE status = 'expired' AND expires_at < $1::timestamptz
         ),
         restored AS (
             UPDATE first_access_reservations r SET status = 'active', expires_at = $1::timestamptz, updated_at = now()
@@ -825,12 +794,50 @@ function restoreAndSyncReservations() {
         UPDATE first_access_product_sizes ps
         SET qty_reserved = qty_reserved + agg.total, updated_at = now()
         FROM agg WHERE ps.product_id = agg.product_id AND ps.size = agg.size`,
-        [fixedExpires]
+        [FIXED_EXPIRES]
     ).then(r => {
-        if (r && r.rowCount > 0) console.log('Restored expired reservations (recent 14 days)');
-        runSync();
-    }).catch(err => { console.error('Restore reservations:', err.message); runSync(); });
+        if (r && r.rowCount > 0) console.log('[cron] Restored', r.rowCount, 'qty_reserved');
+    }).catch(err => console.error('[cron] Restore:', err.message))
+    .then(() => {
+        // 2) Sync: qty_reserved = факт из active reservations
+        return pool.query(
+            `UPDATE first_access_product_sizes ps
+             SET qty_reserved = COALESCE((
+               SELECT SUM(qty)::int FROM first_access_reservations
+               WHERE product_id = ps.product_id AND size = ps.size AND status = 'active'
+             ), 0), updated_at = now()`
+        );
+    }).then(r => {
+        if (r && r.rowCount > 0) console.log('[cron] Synced qty_reserved for', r.rowCount, 'rows');
+    }).catch(err => console.error('[cron] Sync:', err.message))
+    .then(() => {
+        // 3) Expire: active с expires_at < now()
+        return pool.query(
+            `WITH expired AS (
+                SELECT id, product_id, size, qty FROM first_access_reservations
+                WHERE status = 'active' AND expires_at < now()
+            ),
+            marked AS (
+                UPDATE first_access_reservations SET status = 'expired', updated_at = now()
+                WHERE id IN (SELECT id FROM expired)
+                RETURNING product_id, size, qty
+            ),
+            agg AS (
+                SELECT product_id, size, SUM(qty)::int AS total FROM marked GROUP BY product_id, size
+            )
+            UPDATE first_access_product_sizes ps
+            SET qty_reserved = GREATEST(0, ps.qty_reserved - COALESCE(agg.total, 0)), updated_at = now()
+            FROM agg
+            WHERE ps.product_id = agg.product_id AND ps.size = agg.size`
+        );
+    }).then(() => {}).catch(err => console.error('[cron] Expire:', err.message));
 }
+cron.schedule('* * * * *', runReservationCron);
+
+// ── Health check ──
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', r2Configured: !!s3Client, dbConfigured: !!process.env.DATABASE_URL || !!process.env.DATABASE_PUBLIC_URL });
+});
 
 // ── Start ──
 app.listen(PORT, () => {
@@ -839,5 +846,5 @@ app.listen(PORT, () => {
     console.log(`R2: ${s3Client ? 'OK' : 'Not configured'}`);
     console.log(`DB: ${pool ? 'Connected' : 'Not configured'}`);
     console.log(`Auth: Enabled\n`);
-    restoreAndSyncReservations();
+    runReservationCron(); // fix immediately, then every minute via cron
 });
