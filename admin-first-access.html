@@ -38,12 +38,6 @@
 
         <h1 class="text-2xl font-light tracking-tight mb-8">First Access — инвайты и бронирования</h1>
 
-        <div class="mb-8">
-            <button id="btn-fix-hats" onclick="fixHatPrices()" class="px-4 py-2 text-[13px] border border-[#E6E6E6] rounded-lg hover:bg-[#F5F5F5]">
-                Исправить цены 2 шапок (11990→10990)
-            </button>
-        </div>
-
         <section class="mb-12">
             <h2 class="text-lg font-medium mb-4">Бронирования</h2>
             <div class="flex items-center gap-2 mb-4">
@@ -173,20 +167,6 @@
             .replace(/'/g, '&#39;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
-    }
-
-    async function fixHatPrices() {
-        const btn = document.getElementById('btn-fix-hats');
-        btn.disabled = true;
-        btn.textContent = 'Выполняется…';
-        try {
-            const r = await fetch('/api/first-access/admin/fix-hat-prices', { method: 'POST', headers: hdrs });
-            const d = await r.json();
-            if (d.ok) alert('Обновлено: ' + (d.updated || 0) + ' шапок');
-            else alert(d.error || 'Ошибка');
-        } catch (e) { alert('Ошибка: ' + e.message); }
-        btn.disabled = false;
-        btn.textContent = 'Исправить цены 2 шапок (11990→10990)';
     }
 
     function logout() {
