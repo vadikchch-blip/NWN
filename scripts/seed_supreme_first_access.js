@@ -279,11 +279,17 @@ async function main() {
             }
 
             for (const s of prod.sizes) {
+                const qtyRes = await client.query(
+                    `SELECT COALESCE(SUM(qty), 0)::int as v FROM first_access_reservations
+                     WHERE product_id = $1 AND size = $2 AND status = 'active'`,
+                    [productId, s.size]
+                );
+                const qtyReserved = qtyRes.rows[0]?.v || 0;
                 await client.query(
-                    `INSERT INTO first_access_product_sizes (product_id, size, qty_total)
-                     VALUES ($1, $2, $3)
-                     ON CONFLICT (product_id, size) DO UPDATE SET qty_total = $3, updated_at = now()`,
-                    [productId, s.size, s.qty_total]
+                    `INSERT INTO first_access_product_sizes (product_id, size, qty_total, qty_reserved)
+                     VALUES ($1, $2, $3, $4)
+                     ON CONFLICT (product_id, size) DO UPDATE SET qty_total = $3, qty_reserved = $4, updated_at = now()`,
+                    [productId, s.size, s.qty_total, qtyReserved]
                 );
                 sizesCreated++;
             }

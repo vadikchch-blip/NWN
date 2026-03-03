@@ -796,18 +796,27 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', r2Configured: !!s3Client, dbConfigured: !!process.env.DATABASE_URL || !!process.env.DATABASE_PUBLIC_URL });
 });
 
-// ── One-time: restore reservations wrongly expired due to 2025 date bug ──
-function restoreWronglyExpiredReservations() {
+// ── Restore expired + sync qty_reserved (run every startup) ──
+function restoreAndSyncReservations() {
     if (!pool) return;
     const fixedExpires = process.env.RESERVATION_FIXED_EXPIRES_AT || '2026-03-05T17:00:00.000Z';
+
+    const runSync = () => pool.query(
+        `UPDATE first_access_product_sizes ps
+         SET qty_reserved = COALESCE((
+           SELECT SUM(qty)::int FROM first_access_reservations
+           WHERE product_id = ps.product_id AND size = ps.size AND status = 'active'
+         ), 0), updated_at = now()`
+    ).then(() => {}).catch(err => console.error('Sync qty_reserved:', err.message));
+
     pool.query(
-        `WITH wrong_expired AS (
-            SELECT id, product_id, size, qty FROM first_access_reservations
-            WHERE status = 'expired' AND expires_at >= '2025-03-01' AND expires_at < '2025-03-10'
+        `WITH to_restore AS (
+            SELECT id, product_id, size, COALESCE(qty, 1) as qty FROM first_access_reservations
+            WHERE status = 'expired' AND reserved_at >= now() - interval '14 days'
         ),
         restored AS (
             UPDATE first_access_reservations r SET status = 'active', expires_at = $1::timestamptz, updated_at = now()
-            FROM wrong_expired w WHERE r.id = w.id
+            FROM to_restore w WHERE r.id = w.id
             RETURNING r.product_id, r.size, w.qty
         ),
         agg AS (
@@ -818,8 +827,9 @@ function restoreWronglyExpiredReservations() {
         FROM agg WHERE ps.product_id = agg.product_id AND ps.size = agg.size`,
         [fixedExpires]
     ).then(r => {
-        if (r && r.rowCount > 0) console.log('Restored wrongly-expired reservations (2025 date bug)');
-    }).catch(err => console.error('Restore reservations:', err.message));
+        if (r && r.rowCount > 0) console.log('Restored expired reservations (recent 14 days)');
+        runSync();
+    }).catch(err => { console.error('Restore reservations:', err.message); runSync(); });
 }
 
 // ── Start ──
@@ -829,5 +839,5 @@ app.listen(PORT, () => {
     console.log(`R2: ${s3Client ? 'OK' : 'Not configured'}`);
     console.log(`DB: ${pool ? 'Connected' : 'Not configured'}`);
     console.log(`Auth: Enabled\n`);
-    restoreWronglyExpiredReservations();
+    restoreAndSyncReservations();
 });
