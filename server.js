@@ -633,7 +633,7 @@ app.post('/api/first-access/supreme/reserve', async (req, res) => {
             return res.status(409).json({ error: 'Размер уже зарезервирован' });
         }
 
-        const fixedExpiresEnv = process.env.RESERVATION_FIXED_EXPIRES_AT;
+        const fixedExpiresEnv = process.env.RESERVATION_FIXED_EXPIRES_AT || '2025-03-05T17:00:00.000Z'; // 05.03 20:00 МСК
 let expiresAt = fixedExpiresEnv ? new Date(fixedExpiresEnv) : new Date(Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000);
 if (Number.isNaN(expiresAt.getTime())) expiresAt = new Date(Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000);
         const ins = await client.query(

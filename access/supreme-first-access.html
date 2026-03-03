@@ -56,7 +56,7 @@
             <div class="mb-8 md:mb-10">
                 <p class="text-[13px] text-[#AAAAAA] font-medium tracking-wide mb-1">Персональный доступ:</p>
                 <p class="text-[15px] text-[#333] font-medium mb-2" id="user-name"></p>
-                <p class="text-[14px] text-[#888] mb-1">Активен до: <span id="access-ends"></span></p>
+                <p class="text-[14px] text-[#888] mb-1">Активен до: 05.03, 20:00</p>
                 <p class="text-[13px] text-[#888]">Вы можете зарезервировать до <strong id="max-reservations">2</strong> позиций.</p>
             </div>
 
@@ -236,7 +236,6 @@
             if (!me) return;
             document.getElementById('content').classList.remove('hidden');
             document.getElementById('user-name').textContent = me.full_name;
-            document.getElementById('access-ends').textContent = formatDate(me.access_ends_at);
             document.getElementById('max-reservations').textContent = me.max_allowed;
             startPolling();
         });
