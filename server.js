@@ -593,40 +593,35 @@ app.get('/api/first-access/supreme/catalog', async (req, res) => {
         );
 
         const catalog = [];
+        const canon = (s) => {
+            const t = String(s || '').trim().toUpperCase().replace(/\s+/g, ' ').replace(/М/g, 'M').replace(/Л/g, 'L').replace(/С/g, 'S');
+            return t === 'ONE SIZE' ? 'OS' : t;
+        };
+
         for (const prod of products.rows) {
-            const sizes = await pool.query(
-                `SELECT ps.size, ps.qty_total,
-                 COALESCE((SELECT SUM(r.qty)::int FROM first_access_reservations r
-                   WHERE r.product_id = ps.product_id AND r.status = 'active'
-                   AND (TRIM(r.size) = TRIM(ps.size) OR UPPER(TRIM(r.size)) = UPPER(TRIM(ps.size))
-                        OR (r.size IN ('OS','One Size','One size') AND ps.size IN ('OS','One Size','One size')))), 0) as qty_reserved
-                 FROM first_access_product_sizes ps
-                 WHERE ps.product_id = $1`,
-                [prod.product_id]
-            );
+            const [sizes, reservedSizes] = await Promise.all([
+                pool.query(`SELECT size, qty_total FROM first_access_product_sizes WHERE product_id = $1`, [prod.product_id]),
+                pool.query(
+                    `SELECT size, SUM(qty)::int as qty, MIN(expires_at) as min_exp FROM first_access_reservations
+                     WHERE product_id = $1 AND status = 'active' GROUP BY size`,
+                    [prod.product_id]
+                )
+            ]);
+
+            const allSizes = new Map();
+            for (const s of sizes.rows) allSizes.set(canon(s.size), { size: s.size, qty_total: s.qty_total, qty_reserved: 0, min_exp: null });
+            for (const r of reservedSizes.rows) {
+                const key = canon(r.size);
+                const v = allSizes.get(key);
+                if (v) { v.qty_reserved += r.qty; v.min_exp = !v.min_exp || (r.min_exp && r.min_exp < v.min_exp) ? r.min_exp : v.min_exp; }
+                else allSizes.set(key, { size: r.size, qty_total: 0, qty_reserved: r.qty, min_exp: r.min_exp });
+            }
 
             const sizeList = [];
-            for (const s of sizes.rows) {
-                const available = Math.max(0, s.qty_total - s.qty_reserved);
-                let status = 'unavailable';
-                let reserved_until = null;
-
-                if (s.qty_total === 0) {
-                    status = 'unavailable';
-                } else if (available > 0) {
-                    status = 'available';
-                } else {
-                    status = 'reserved';
-                    const minExp = await pool.query(
-                        `SELECT MIN(expires_at) as m FROM first_access_reservations
-                         WHERE product_id = $1 AND status = 'active'
-                         AND (TRIM(size) = TRIM($2) OR (size IN ('OS','One Size') AND $2 IN ('OS','One Size')))`,
-                        [prod.product_id, s.size]
-                    );
-                    reserved_until = minExp.rows[0]?.m || null;
-                }
-
-                sizeList.push({ size: s.size, status, available, reserved_until });
+            for (const v of allSizes.values()) {
+                const available = Math.max(0, v.qty_total - v.qty_reserved);
+                const status = v.qty_total === 0 ? (v.qty_reserved > 0 ? 'reserved' : 'unavailable') : (available > 0 ? 'available' : 'reserved');
+                sizeList.push({ size: v.size, status, available, reserved_until: status === 'reserved' ? v.min_exp : null });
             }
 
             const imageKey = (getImageKeyOverrides()[prod.title] || prod.image_key || prod.title || '').trim();
