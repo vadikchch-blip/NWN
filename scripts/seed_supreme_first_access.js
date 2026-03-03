@@ -236,17 +236,30 @@ async function main() {
 
         for (const prod of products) {
             const imageKey = (overrides[prod.title] || prod.image_key || prod.title).trim();
-            const existing = await client.query(
-                'SELECT id FROM first_access_products WHERE title = $1',
+            let existing = await client.query(
+                'SELECT id, title FROM first_access_products WHERE title = $1 AND brand = \'Supreme\'',
                 [prod.title]
             );
+            // Fallback: match by article if title drifted (e.g. "Beanie" vs "Beani" between xlsx versions)
+            if (existing.rows.length === 0 && prod.article) {
+                const byArticle = await client.query(
+                    'SELECT id, title FROM first_access_products WHERE article = $1 AND brand = \'Supreme\'',
+                    [prod.article]
+                );
+                if (byArticle.rows.length > 0) {
+                    existing = byArticle;
+                    if (existing.rows[0].title !== prod.title) {
+                        console.log('  Matched by article:', prod.article, '| DB had:', existing.rows[0].title.slice(0, 40), '→ xlsx:', prod.title.slice(0, 40));
+                    }
+                }
+            }
 
             let productId;
             if (existing.rows.length > 0 && !doForce) {
                 productId = existing.rows[0].id;
                 await client.query(
-                    'UPDATE first_access_products SET price_rrc = $1, image_key = $2, article = $3, is_active = true, updated_at = now() WHERE id = $4',
-                    [prod.price_rrc, imageKey, prod.article || prod.title, productId]
+                    'UPDATE first_access_products SET title = $1, price_rrc = $2, image_key = $3, article = $4, is_active = true, updated_at = now() WHERE id = $5',
+                    [prod.title, prod.price_rrc, imageKey, prod.article || prod.title, productId]
                 );
                 productsUpdated++;
             } else {
