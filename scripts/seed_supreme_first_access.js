@@ -302,6 +302,14 @@ async function main() {
             console.log('  Deactivated (not in xlsx):', deactivatedCount);
         }
 
+        // Жёсткая правка: 2 шапки 11990 → 10990 (перебивает xlsx)
+        const hatFix = await client.query(
+            `UPDATE first_access_products SET price_rrc = 10990, updated_at = now()
+             WHERE id IN (SELECT id FROM first_access_products WHERE title ILIKE '%шап%' AND price_rrc = 11990 ORDER BY title LIMIT 2)
+             RETURNING id`
+        );
+        if (hatFix.rowCount > 0) console.log('  Hat price override (11990→10990):', hatFix.rowCount);
+
         await client.query('COMMIT');
 
         console.log('\nSummary:');
